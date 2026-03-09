@@ -601,8 +601,183 @@ CANCEL_REQUEST → CANCEL_COMPLETED (취소 승인)
 ## 참고 문서
 
 - **화면정의서**: `C:\edu\project\semiProject\화면정의서_다나가_v1_7.pptx`
-- **DB 설계서**: `C:\edu\project\semiProject\다나가_Danaga_DB_상세_설계_v4.pptx`
+- **DB 설계서**: `C:\edu\project\semiProject\다나가_Danaga_DB_상세_설계_v5.pptx`
 - **참고 프로젝트**: `C:\edu\Java\work\step11_mvc_SaveElec\src\mvc`
 - **현재 프로젝트**: `C:\edu\project\semiProject\Danaga`
 
 이 계획서를 따라 단계별로 구현하면, 체계적이고 안정적인 중고 거래 플랫폼을 완성할 수 있습니다.
+
+---
+
+## 개발 진행 로그
+
+### 2026-03-09 (Phase 1 시작)
+
+#### ✅ 완료된 작업
+
+**1. 프로젝트 구조 설정**
+- 패키지 구조 생성 (view, controller, service, dao, dto, exception, util, config)
+- .gitkeep 파일 추가하여 Git에서 폴더 구조 유지
+- .gitignore 업데이트 (IDE 설정, 컴파일 파일, 민감 정보 등)
+
+**2. 설정 파일 (config/)**
+- ✅ `db.properties` - MySQL 연결 설정
+
+**3. Enum 클래스 (dto/)**
+- ✅ `UserStatus.java` - 회원 상태 (ACTIVE, BANNED)
+- ✅ `UserRole.java` - 회원 권한 (USER, ADMIN)
+- ✅ `ItemCondition.java` - 상품 상태 (EXCELLENT, GOOD, FAIR)
+- ✅ `ProductStatus.java` - 판매 상태 (ON_SALE, RESERVED, COMPLETED)
+- ✅ `OrderStatus.java` - 주문 상태 (PENDING, SHIPPING, COMPLETED, CANCEL_REQUEST, CANCEL_COMPLETED)
+
+**4. Exception 클래스 (exception/)**
+- ✅ `DuplicateUserException.java` - 중복 회원 ID
+- ✅ `UserNotFoundException.java` - 회원 없음
+- ✅ `ProductNotFoundException.java` - 상품 없음
+- ✅ `InsufficientBalanceException.java` - 잔액 부족
+- ✅ `InvalidOrderStatusException.java` - 잘못된 주문 상태
+- ✅ `UnauthorizedAccessException.java` - 권한 없음
+- ✅ `DatabaseException.java` - 데이터베이스 오류
+
+**5. 유틸리티 클래스 (util/)**
+- ✅ `DBUtil.java` - DB 연결 관리, 트랜잭션 제어 (getConnection, close, commit, rollback)
+- ✅ `SessionManager.java` - 로그인 세션 관리 (login, logout, isLoggedIn, getCurrentUser, isAdmin)
+
+**6. DTO 클래스 (dto/)**
+- ✅ `User.java` - 회원 정보 (userId, password, balance, status, role)
+- ✅ `Category.java` - 카테고리 정보
+- ✅ `Product.java` - 상품 정보 (JOIN용 필드 포함)
+- ✅ `Order.java` - 주문 정보 (JOIN용 필드 포함)
+- ✅ `Notification.java` - 알림 정보
+- ✅ `FavoriteCategory.java` - 즐겨찾기 카테고리
+
+**7. View 클래스 (view/)**
+- ✅ `StartView.java` - 프로그램 진입점 (main 메서드)
+- ✅ `MenuView.java` - 권한별 메뉴 라우팅
+- ✅ `GuestMenuView.java` - 비로그인 메뉴
+- ✅ `UserMenuView.java` - 일반 사용자 메뉴
+- ✅ `AdminMenuView.java` - 관리자 메뉴
+- ✅ `SuccessView.java` - 성공 메시지 출력
+- ✅ `FailView.java` - 실패 메시지 출력
+
+#### 📋 다음 단계 (Phase 1 남은 작업)
+
+1. **schema.sql 작성** - 데이터베이스 테이블 생성 DDL
+2. **DBUtil 연결 테스트** - getConnection() 테스트
+3. **MySQL 데이터베이스 생성** - `danaga` 데이터베이스 및 테이블
+
+#### 📋 향후 계획 (Phase 2)
+
+1. DAO 클래스 구현 (UserDAO 우선)
+2. Service 클래스 구현 (UserService 우선)
+3. Controller 클래스 구현 (UserController 우선)
+4. 로그인/회원가입 기능 완성
+
+#### 📝 참고사항
+
+- 모든 View의 TODO 메서드는 향후 Controller 연동 시 구현 예정
+- db.properties의 비밀번호는 각자 환경에 맞게 수정 필요
+- DBUtil의 Connection 관리 패턴이 모든 DAO에서 사용될 예정
+
+---
+
+### 2026-03-09 (화면정의서 반영)
+
+#### ✅ 완료된 작업
+
+**1. 화면정의서 분석**
+- PowerPoint 파일에서 23개 화면 구조 추출
+- 각 권한별 메뉴 구조 파악 (Guest, User, Admin)
+
+**2. View 클래스 재구성 (화면정의서 기준)**
+
+**GuestMenuView.java (SCR-001 비로그인 메인 메뉴)**
+- ✅ 1. 상품 전체 목록 보기
+- ✅ 2. 카테고리별 검색
+- ✅ 3. 상품번호로 검색
+- ✅ 4. 로그인
+- ✅ 5. 회원가입
+- ✅ 6. 종료
+
+**UserMenuView.java (SCR-009 USER 메인 메뉴)**
+- ✅ [상품 조회]
+  - 1. 상품 전체 목록 보기
+  - 2. 카테고리별 검색
+  - 3. 상품번호로 검색
+- ✅ [기타]
+  - 4. 마이페이지
+  - 5. 로그아웃
+
+**MyPageView.java (SCR-010 마이페이지) - 신규 생성**
+- ✅ 1. 내 구매 현황
+- ✅ 2. 내 판매 현황
+- ✅ 3. 내 판매 상품 관리
+- ✅ 4. 상품 등록
+- ✅ 5. 즐겨찾기 카테고리 관리
+- ✅ 6. 알림 확인
+- ✅ 7. 잔액 충전
+- ✅ 0. 돌아가기
+
+**AdminMenuView.java (SCR-019 관리자 메인 메뉴)**
+- ✅ [상품 조회]
+  - 1. 상품목록
+  - 2. 카테고리검색
+  - 3. 번호검색
+- ✅ [거래 관리]
+  - 4. 취소요청 목록
+  - 5. 취소 승인
+- ✅ [회원 관리]
+  - 6. 회원 목록 / 차단 관리
+- ✅ [카테고리 관리]
+  - 7. 목록
+  - 8. 추가
+  - 9. 삭제
+- ✅ 10. 알림 확인
+- ✅ 11. 로그아웃
+
+#### 📋 주요 변경 사항
+
+1. **메뉴 구조 완전 재설계** - 화면정의서(v1.7) 기준으로 모든 메뉴 재구성
+2. **MyPageView 신규 생성** - 마이페이지 전용 View 분리
+3. **메뉴 UI 개선** - 화면정의서의 박스 스타일 적용 (════)
+4. **SCR 코드 매핑** - 각 화면에 화면정의서 코드 주석 추가
+
+#### 📋 화면정의서 기준 23개 화면 목록
+
+**비로그인 (5개)**
+- SCR-001: 비로그인 메인 메뉴 ✅
+- SCR-002: 로그인 (TODO)
+- SCR-003: 회원가입 (TODO)
+- SCR-004: 상품 전체 목록 (TODO)
+- SCR-005: 카테고리별 검색 (TODO)
+- SCR-006: 상품 상세보기 (비로그인) (TODO)
+
+**USER (12개)**
+- SCR-007: 상품 상세보기 (로그인) (TODO)
+- SCR-008: 구매 신청 확인 (TODO)
+- SCR-009: 로그인 후 메인 메뉴 ✅
+- SCR-010: 마이페이지 ✅
+- SCR-011: 내 구매 현황 (TODO)
+- SCR-012: 거래 확정 (TODO)
+- SCR-013: 취소 요청 (TODO)
+- SCR-014: 내 판매 현황 (TODO)
+- SCR-015: 판매 상품 관리 (TODO)
+- SCR-016: 상품 등록 (TODO)
+- SCR-016-S: 배송 처리 (TODO)
+- SCR-016-C: 취소 요청 처리 (TODO)
+- SCR-017: 즐겨찾기 카테고리 관리 (TODO)
+- SCR-018: 알림 확인 (TODO)
+
+**ADMIN (3개)**
+- SCR-019: 관리자 메인 메뉴 ✅
+- SCR-020: 취소요청 목록 / 취소 승인 (TODO)
+- SCR-021: 회원 목록 / 차단 관리 (TODO)
+
+**참고 (2개)**
+- REF-001: 상품/거래 상태 전이 흐름
+
+#### 📝 참고사항
+
+- 모든 메뉴가 화면정의서 기준으로 재구성됨
+- TODO 메서드는 향후 단계별로 구현 예정
+- 다음 단계: schema.sql 작성 및 DAO 구현
