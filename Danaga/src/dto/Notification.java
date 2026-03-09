@@ -1,7 +1,6 @@
 package dto;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * 알림 DTO
@@ -13,7 +12,7 @@ public class Notification implements Serializable {
     private String userId;
     private String message;
     private boolean isRead;
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     // 기본 생성자
     public Notification() {
@@ -28,7 +27,7 @@ public class Notification implements Serializable {
 
     // 전체 필드 생성자
     public Notification(int notificationId, String userId, String message,
-                        boolean isRead, LocalDateTime createdAt) {
+                        boolean isRead, String createdAt) {
         this.notificationId = notificationId;
         this.userId = userId;
         this.message = message;
@@ -69,11 +68,11 @@ public class Notification implements Serializable {
         isRead = read;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 

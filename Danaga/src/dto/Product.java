@@ -1,7 +1,6 @@
 package dto;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * 상품 DTO
@@ -17,7 +16,7 @@ public class Product implements Serializable {
     private String description;
     private ItemCondition itemCondition;
     private ProductStatus status;
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     // JOIN용 추가 필드
     private String categoryName;
@@ -42,7 +41,7 @@ public class Product implements Serializable {
     // 전체 필드 생성자
     public Product(int productId, String sellerId, int categoryId, String title,
                    int price, String description, ItemCondition itemCondition,
-                   ProductStatus status, LocalDateTime createdAt) {
+                   ProductStatus status, String createdAt) {
         this.productId = productId;
         this.sellerId = sellerId;
         this.categoryId = categoryId;
@@ -119,11 +118,11 @@ public class Product implements Serializable {
         this.status = status;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 
