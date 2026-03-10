@@ -1,1 +1,60 @@
-/.metadata/
+# Eclipse 관련
+.metadata/
+.settings/
+.classpath
+.project
+*.launch
+
+# IntelliJ IDEA 관련
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code 관련
+.vscode/
+*.code-workspace
+
+# 빌드 결과물
+bin/
+build/
+target/
+*.class
+
+# 라이브러리 (필요시 주석 해제)
+# lib/*.jar
+
+# 데이터베이스 설정 파일 (보안 중요!)
+**/config/db.properties
+db.properties
+
+# 개발 문서 (선택사항 - 필요하면 주석 처리)
+DEVELOPMENT.md
+TODO.md
+NOTES.md
+
+# OS 관련
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# 임시 파일
+*.tmp
+*.temp
+*.log
+*.swp
+*.swo
+*~
+
+# 테스트용 임시 파일
+Downloader.java
+Test*.java
+*Test.java
+
+# Claude 설정 (개인 설정)
+.claude/settings.local.json

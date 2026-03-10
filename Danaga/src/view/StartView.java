@@ -1,14 +1,21 @@
 package view;
 
-class StartView {
-    
-    public static void main(String []args) {
-        System.out.println("===== 프로그램 시작합니다. =====");
-//
-//        MenuView mv = new MenuView(); // 전역변수 초기화, 생성자 호출 
-//        
-//        mv.printMenu();
+/**
+ * 프로그램 시작점
+ */
+public class StartView {
 
+    public static void main(String[] args) {
+        System.out.println("\n========================================");
+        System.out.println("   다나가 (Danaga) 중고 거래 플랫폼");
+        System.out.println("========================================\n");
+
+        MenuView menuView = new MenuView();
+
+        try {
+            menuView.showMenu();
+        } finally {
+            menuView.close();
+        }
     }
-    
 }

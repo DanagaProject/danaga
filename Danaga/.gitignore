@@ -1,1 +1,50 @@
+# Compiled class files
 /bin/
+/build/
+/target/
+/out/
+*.class
+
+# Eclipse IDE
+.settings/
+.classpath
+.project
+.metadata/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# Database configuration (contains sensitive info)
+**/config/db.properties
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*~
+nul
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Package files (exclude libraries if needed)
+*.jar
+*.war
+*.ear
+
+# Claude AI memory
+.claude/
+
+# Backup files
+*.bak
+*.backup
