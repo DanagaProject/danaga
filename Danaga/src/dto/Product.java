@@ -1,21 +1,17 @@
 package dto;
 
-import java.io.Serializable;
-
 /**
  * 상품 DTO
  */
-public class Product implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class Product {
     private int productId;
     private String sellerId;
     private int categoryId;
     private String title;
     private int price;
     private String description;
-    private ItemCondition itemCondition;
-    private ProductStatus status;
+    private String itemCondition;
+    private String status;
     private String createdAt;
 
     // JOIN용 추가 필드
@@ -28,20 +24,20 @@ public class Product implements Serializable {
 
     // 등록용 생성자 (ID, status, createdAt 제외)
     public Product(String sellerId, int categoryId, String title, int price,
-                   String description, ItemCondition itemCondition) {
+                   String description, String itemCondition) {
         this.sellerId = sellerId;
         this.categoryId = categoryId;
         this.title = title;
         this.price = price;
         this.description = description;
         this.itemCondition = itemCondition;
-        this.status = ProductStatus.ON_SALE;
+        this.status = "ON_SALE";
     }
 
     // 전체 필드 생성자
     public Product(int productId, String sellerId, int categoryId, String title,
-                   int price, String description, ItemCondition itemCondition,
-                   ProductStatus status, String createdAt) {
+                   int price, String description, String itemCondition,
+                   String status, String createdAt) {
         this.productId = productId;
         this.sellerId = sellerId;
         this.categoryId = categoryId;
@@ -102,19 +98,19 @@ public class Product implements Serializable {
         this.description = description;
     }
 
-    public ItemCondition getItemCondition() {
+    public String getItemCondition() {
         return itemCondition;
     }
 
-    public void setItemCondition(ItemCondition itemCondition) {
+    public void setItemCondition(String itemCondition) {
         this.itemCondition = itemCondition;
     }
 
-    public ProductStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(ProductStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

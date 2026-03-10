@@ -1,18 +1,14 @@
 package dto;
 
-import java.io.Serializable;
-
 /**
  * 회원 DTO
  */
-public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class User {
     private String userId;
     private String password;
     private int balance;
-    private UserStatus status;
-    private UserRole role;
+    private String status;
+    private String role;
 
     // 기본 생성자
     public User() {
@@ -23,12 +19,12 @@ public class User implements Serializable {
         this.userId = userId;
         this.password = password;
         this.balance = 0;
-        this.status = UserStatus.ACTIVE;
-        this.role = UserRole.USER;
+        this.status = "ACTIVE";
+        this.role = "USER";
     }
 
     // 전체 필드 생성자
-    public User(String userId, String password, int balance, UserStatus status, UserRole role) {
+    public User(String userId, String password, int balance, String status, String role) {
         this.userId = userId;
         this.password = password;
         this.balance = balance;
@@ -61,19 +57,19 @@ public class User implements Serializable {
         this.balance = balance;
     }
 
-    public UserStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(UserStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-    public UserRole getRole() {
+    public String getRole() {
         return role;
     }
 
-    public void setRole(UserRole role) {
+    public void setRole(String role) {
         this.role = role;
     }
 

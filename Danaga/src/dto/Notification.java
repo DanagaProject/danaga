@@ -1,13 +1,9 @@
 package dto;
 
-import java.io.Serializable;
-
 /**
  * 알림 DTO
  */
-public class Notification implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class Notification {
     private int notificationId;
     private String userId;
     private String message;

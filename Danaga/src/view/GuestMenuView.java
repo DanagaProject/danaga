@@ -1,5 +1,6 @@
 package view;
 
+import controller.AuthController;
 import java.util.Scanner;
 
 /**
@@ -7,9 +8,11 @@ import java.util.Scanner;
  */
 public class GuestMenuView {
     private Scanner sc;
+    private AuthController authController;
 
     public GuestMenuView(Scanner sc) {
         this.sc = sc;
+        this.authController = new AuthController();
     }
 
     /**
@@ -60,28 +63,42 @@ public class GuestMenuView {
      * 로그인
      */
     private void login() {
-        System.out.println("\n===== 로그인 =====");
-        System.out.print("아이디: ");
+        System.out.println("\n════════════════════════════════════════");
+        System.out.println("           로그인");
+        System.out.println("════════════════════════════════════════");
+        System.out.print("  아이디: ");
         String userId = sc.nextLine().trim();
-        System.out.print("비밀번호: ");
+        System.out.print("  비밀번호: ");
         String password = sc.nextLine().trim();
 
-        // TODO: UserController.login() 호출
-        System.out.println("[TODO] 로그인 기능 구현 예정");
+        boolean success = authController.login(userId, password);
+        if (!success) {
+            // 로그인 실패 시 재시도 메시지
+            System.out.println("다시 시도하려면 메뉴에서 로그인을 선택해주세요.");
+        }
     }
 
     /**
      * 회원가입
      */
     private void signup() {
-        System.out.println("\n===== 회원가입 =====");
-        System.out.print("아이디: ");
+        System.out.println("\n════════════════════════════════════════");
+        System.out.println("           회원가입");
+        System.out.println("════════════════════════════════════════");
+        System.out.print("  아이디: ");
         String userId = sc.nextLine().trim();
-        System.out.print("비밀번호: ");
+        System.out.print("  비밀번호: ");
         String password = sc.nextLine().trim();
+        System.out.print("  비밀번호 확인: ");
+        String passwordConfirm = sc.nextLine().trim();
 
-        // TODO: UserController.signup() 호출
-        System.out.println("[TODO] 회원가입 기능 구현 예정");
+        // 비밀번호 확인
+        if (!password.equals(passwordConfirm)) {
+            FailView.printMessage("비밀번호가 일치하지 않습니다.");
+            return;
+        }
+
+        authController.signup(userId, password);
     }
 
     /**

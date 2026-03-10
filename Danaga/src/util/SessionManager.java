@@ -1,7 +1,6 @@
 package util;
 
 import dto.User;
-import dto.UserRole;
 
 /**
  * 로그인 세션 관리
@@ -45,7 +44,7 @@ public class SessionManager {
      * 관리자 여부 확인
      */
     public static boolean isAdmin() {
-        return currentUser != null && currentUser.getRole() == UserRole.ADMIN;
+        return currentUser != null && "ADMIN".equals(currentUser.getRole());
     }
 
     /**

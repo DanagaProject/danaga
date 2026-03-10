@@ -1,13 +1,9 @@
 package dto;
 
-import java.io.Serializable;
-
 /**
  * 카테고리 DTO
  */
-public class Category implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class Category {
     private int categoryId;
     private String name;
 

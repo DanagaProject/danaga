@@ -58,19 +58,22 @@ public class DBUtil {
      */
     public static void close(Connection con, PreparedStatement pstmt, ResultSet rs) {
         try {
-            if (rs != null) rs.close();
+            if (rs != null)
+                rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         try {
-            if (pstmt != null) pstmt.close();
+            if (pstmt != null)
+                pstmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         try {
-            if (con != null) con.close();
+            if (con != null)
+                con.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

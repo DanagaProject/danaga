@@ -1,17 +1,13 @@
 package dto;
 
-import java.io.Serializable;
-
 /**
  * 주문 DTO
  */
-public class Order implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class Order {
     private int orderId;
     private int productId;
     private String buyerId;
-    private OrderStatus status;
+    private String status;
     private String createdAt;
 
     // JOIN용 추가 필드
@@ -27,11 +23,11 @@ public class Order implements Serializable {
     public Order(int productId, String buyerId) {
         this.productId = productId;
         this.buyerId = buyerId;
-        this.status = OrderStatus.PENDING;
+        this.status = "PENDING";
     }
 
     // 전체 필드 생성자
-    public Order(int orderId, int productId, String buyerId, OrderStatus status, String createdAt) {
+    public Order(int orderId, int productId, String buyerId, String status, String createdAt) {
         this.orderId = orderId;
         this.productId = productId;
         this.buyerId = buyerId;
@@ -64,11 +60,11 @@ public class Order implements Serializable {
         this.buyerId = buyerId;
     }
 
-    public OrderStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(OrderStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

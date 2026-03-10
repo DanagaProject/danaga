@@ -1,13 +1,9 @@
 package dto;
 
-import java.io.Serializable;
-
 /**
  * 즐겨찾기 카테고리 DTO
  */
-public class FavoriteCategory implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class FavoriteCategory {
     private String userId;
     private int categoryId;
 
