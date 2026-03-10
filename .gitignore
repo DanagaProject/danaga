@@ -1,8 +1,8 @@
 # Eclipse 관련
 .metadata/
-.settings/
-.classpath
-.project
+# .settings/  - 팀 프로젝트용으로 포함
+# .classpath  - 팀 프로젝트용으로 포함
+# .project    - 팀 프로젝트용으로 포함
 *.launch
 
 # IntelliJ IDEA 관련
