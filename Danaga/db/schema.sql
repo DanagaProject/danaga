@@ -1,5 +1,7 @@
 -- 다나가 (Danaga) 중고 거래 플랫폼 DB 스키마
 -- DATETIME 사용 (TIMESTAMP 대신)
+create database danaga_local_my;
+use danaga_local_my;
 
 -- 1. 회원 테이블
 CREATE TABLE users (
