@@ -67,12 +67,12 @@ public interface ProductDAO {
 	/**
 	 * 즐겨찾기 카테고리 조회
 	 * */
-	List<FavoriteCategory> favCategorySeletAll() throws CategoryNotFoundException, DatabaseException;
+	List<FavoriteCategory> favCategorySeletAllByUser() throws CategoryNotFoundException, DatabaseException;
 	
 	/**
 	 * 즐겨찾기 카테고리 추가
 	 * */
-	int favCategoryUpdate(User currentUser) throws CategoryNotFoundException;
+	int favCategoryInsert(User currentUser) throws CategoryNotFoundException;
 	
 	
 	/**

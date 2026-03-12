@@ -376,15 +376,17 @@ public class ProductDAOImpl implements ProductDAO {
 		
 		return result;
 	}
-
+	
+	// currentUser 활용해서 뽑아오기
 	@Override
-	public List<FavoriteCategory> favCategorySeletAll() throws CategoryNotFoundException, DatabaseException {
+	public List<FavoriteCategory> favCategorySeletAllByUser() throws CategoryNotFoundException, DatabaseException {
 		Connection con=null;
 		PreparedStatement ps=null;
 		ResultSet rs = null;
 		FavoriteCategory favoriteCategory = null;
+		
 		List<FavoriteCategory> list = new ArrayList<>();
-		String sql = "select * from favorite_category order by category_id";
+		String sql = "select * from favorite_category where user_id = ? group by user_id order by user_id, category_id";
 		
 		try {
 			con = DBUtil.getConnection();
@@ -414,7 +416,7 @@ public class ProductDAOImpl implements ProductDAO {
 	}
 
 	@Override
-	public int favCategoryUpdate(User currentUser) throws CategoryNotFoundException {
+	public int favCategoryInsert(User currentUser) throws CategoryNotFoundException {
 		Connection con=null;
 		PreparedStatement ps=null;
 		String sql = "";
