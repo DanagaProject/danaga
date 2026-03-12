@@ -24,6 +24,13 @@ public class UserServiceImpl implements UserService {
         return instance;
     }
 
+    /**
+     * 회원가입 처리
+     * @param userId 사용자 ID
+     * @param password 비밀번호
+     * @throws DuplicateUserException 중복된 아이디인 경우
+     * @throws DatabaseException DB 오류 발생 시
+     */
     @Override
     public void signup(String userId, String password)
             throws DuplicateUserException, DatabaseException {
@@ -48,6 +55,14 @@ public class UserServiceImpl implements UserService {
         System.out.println("[UserService] 회원가입 성공: " + userId);
     }
 
+    /**
+     * 로그인 처리
+     * @param userId 사용자 ID
+     * @param password 비밀번호
+     * @return 로그인한 사용자 정보
+     * @throws UserNotFoundException 사용자를 찾을 수 없거나 비밀번호가 일치하지 않는 경우
+     * @throws DatabaseException DB 오류 발생 시
+     */
     @Override
     public User login(String userId, String password)
             throws UserNotFoundException, DatabaseException {
@@ -68,6 +83,9 @@ public class UserServiceImpl implements UserService {
         }
 
         // 3. 계정 상태 확인
+        if ("BANNED".equals(user.getStatus())) {
+            throw new UserNotFoundException("차단된 계정입니다.");
+        }
         if ("INACTIVE".equals(user.getStatus())) {
             throw new UserNotFoundException("비활성화된 계정입니다.");
         }
@@ -79,6 +97,10 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    /**
+     * 로그아웃 처리
+     * 세션에서 로그인 정보 제거
+     */
     @Override
     public void logout() {
         SessionManager.logout();
