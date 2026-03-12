@@ -26,7 +26,8 @@ public class AuthController {
      */
     public void signup(String userId, String password) {
         try {
-            userService.signup(userId, password);
+            User user = new User(userId, password);
+            userService.signup(user);
             SuccessView.printMessage("회원가입이 완료되었습니다.");
         } catch (DuplicateUserException e) {
             FailView.printMessage(e.getMessage());
@@ -45,7 +46,8 @@ public class AuthController {
      */
     public boolean login(String userId, String password) {
         try {
-            User user = userService.login(userId, password);
+            User loginUser = new User(userId, password);
+            User user = userService.login(loginUser);
             SuccessView.printLoginSuccess(user);
             return true;
         } catch (UserNotFoundException e) {
