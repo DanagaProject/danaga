@@ -1,7 +1,7 @@
 package dto;
 
 /**
- * 주문 DTO
+ * 주문 DTO (orders 테이블)
  * status 값 매핑 (code 테이블):
  * - code_id 4 → name 'PENDING' (대기중)
  * - code_id 5 → name 'SHIPPING' (배송중)
@@ -11,16 +11,13 @@ package dto;
  * - code_id 9 → name 'COMPLETED' (완료)
  */
 public class Orders {
-    private int orderId;
+        private int ordersId; // DB 컬럼: orders_id
     private int productId;
     private String buyerId;
     private int statusId; // DB 실제 컬럼
     private String createdAt;
 
     // JOIN용 추가 필드
-    private String productTitle;
-    private int productPrice;
-    private String sellerId;
     private String status; // code 테이블과 JOIN해서 얻은 name 값 (PENDING/SHIPPING/COMPLETED 등)
 
     // 기본 생성자
@@ -35,7 +32,9 @@ public class Orders {
     }
 
     // 전체 필드 생성자
-    public Orders(int ordersId, int productId, String buyerId, String status, String createdAt) {
+
+
+    public Orders(int ordersId, int productId, String buyerId, int statusId, String createdAt) {
 
         this.ordersId = ordersId;
         this.productId = productId;
@@ -45,12 +44,12 @@ public class Orders {
     }
 
     // Getters and Setters
-    public int getOrderId() {
-        return orderId;
+    public int getOrdersId() {
+        return ordersId;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
+    public void setOrdersId(int ordersId) {
+        this.ordersId = ordersId;
     }
 
     public int getProductId() {
@@ -85,30 +84,6 @@ public class Orders {
         this.createdAt = createdAt;
     }
 
-    public String getProductTitle() {
-        return productTitle;
-    }
-
-    public void setProductTitle(String productTitle) {
-        this.productTitle = productTitle;
-    }
-
-    public int getProductPrice() {
-        return productPrice;
-    }
-
-    public void setProductPrice(int productPrice) {
-        this.productPrice = productPrice;
-    }
-
-    public String getSellerId() {
-        return sellerId;
-    }
-
-    public void setSellerId(String sellerId) {
-        this.sellerId = sellerId;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -120,9 +95,7 @@ public class Orders {
     @Override
     public String toString() {
         return "Orders{" +
-                "ordersId=" + orderId +
-                ", productTitle='" + productTitle + '\'' +
-                ", productPrice=" + productPrice +
+                "ordersId=" + ordersId +
                 ", statusId=" + statusId +
                 ", status='" + status + '\'' +
                 ", createdAt='" + createdAt + '\'' +

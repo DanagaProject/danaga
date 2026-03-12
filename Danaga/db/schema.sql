@@ -1,5 +1,14 @@
 -- 다나가 (Danaga) 중고 거래 플랫폼 DB 스키마
 -- DATETIME 사용 (TIMESTAMP 대신)
+create database danaga_local_my;
+use danaga_local_my;
+
+select * from users;
+select * from categories;
+select * from products;
+select * from orders;
+select * from notifications;
+select * from favorite_categories;
 
 -- 1. 회원 테이블
 CREATE TABLE users (
@@ -59,10 +68,10 @@ CREATE TABLE notifications (
 
 -- 6. 즐겨찾기 카테고리 테이블
 CREATE TABLE favorite_categories (
+	fav_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL,
     category_id INT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, category_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE CASCADE
 );

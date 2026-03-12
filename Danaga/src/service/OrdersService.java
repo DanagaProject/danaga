@@ -2,7 +2,7 @@ package service;
 
 import exception.DatabaseException;
 
-public interface OrderService {
+public interface OrdersService {
 	/**
 	 * 구매자 잔액 차감, 상품 상태 변경, 주문 생성, 알림 발송을 트랜잭션으로 처리합니다.
 	 */
