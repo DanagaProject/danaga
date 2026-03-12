@@ -3,7 +3,7 @@ package dto;
 /**
  * 주문 DTO
  */
-public class Order {
+public class Orders {
     private int orderId;
     private int productId;
     private String buyerId;
@@ -16,18 +16,18 @@ public class Order {
     private String sellerId;
 
     // 기본 생성자
-    public Order() {
+    public Orders() {
     }
 
     // 등록용 생성자 (ID, createdAt 제외)
-    public Order(int productId, String buyerId) {
+    public Orders(int productId, String buyerId) {
         this.productId = productId;
         this.buyerId = buyerId;
         this.status = "PENDING";
     }
 
     // 전체 필드 생성자
-    public Order(int orderId, int productId, String buyerId, String status, String createdAt) {
+    public Orders(int orderId, int productId, String buyerId, String status, String createdAt) {
         this.orderId = orderId;
         this.productId = productId;
         this.buyerId = buyerId;
