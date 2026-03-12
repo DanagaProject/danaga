@@ -15,7 +15,7 @@ import util.DBUtil;
 public class OrdersDAOImp implements OrdersDAO {
 
     @Override
-    public int orderInsert(Orders orders) throws SQLException {
+    public int ordersInsert(Orders orders) throws SQLException {
         Connection con = null;
         int result = 0;
 
@@ -34,7 +34,7 @@ public class OrdersDAOImp implements OrdersDAO {
 
             updateUserBalance(con, orders.getBuyerId(), -price);
             
-            result = insertOrdersTable(con, orders); // 생성된 order_id를 반환받을 수도 있음
+            result = insertordersTable(con, orders); // 생성된 orders_id를 반환받을 수도 있음
             
             updateProductStatus(con, orders.getProductId(), "RESERVED");
             
@@ -58,35 +58,31 @@ public class OrdersDAOImp implements OrdersDAO {
     }
 
     @Override
-    public List<Orders> selectOrdersByUserId(String userId) throws SQLException {
+    public List<orders> selectordersByUserId(String userId) throws SQLException {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        List<Orders> list = new ArrayList<>();
+        List<orders> list = new ArrayList<>();
 
         try {
             con = DBUtil.getConnection();
-            String sql = "SELECT o.order_id, o.product_id, o.buyer_id, o.status, o.created_at, " +
-                         "p.title as product_title, p.price as product_price, p.user_id as seller_id " +
-                         "FROM orders o " +
-                         "JOIN products p ON o.product_id = p.product_id " +
-                         "WHERE o.buyer_id = ? " +
-                         "ORDER BY o.order_id DESC";
+            String sql = "SELECT o.orders_id, o.product_id, o.buyer_id, o.status, o.created_at " +
+                    "FROM orders o " +
+                    "WHERE o.buyer_id = ? " +
+                    "order BY o.orders_id DESC";
                          
             ps = con.prepareStatement(sql);
             ps.setString(1, userId);
             rs = ps.executeQuery();
             
             while (rs.next()) {
-                Orders orders = new Orders();
-                orders.setOrderId(rs.getInt("order_id"));
+                Orders orders = new orders();
+                orders.setordersId(rs.getInt("orders_id"));
                 orders.setProductId(rs.getInt("product_id"));
                 orders.setBuyerId(rs.getString("buyer_id"));
                 orders.setStatus(rs.getString("status"));
                 orders.setCreatedAt(rs.getString("created_at"));
-                orders.setProductTitle(rs.getString("product_title"));
-                orders.setProductPrice(rs.getInt("product_price"));
-                orders.setSellerId(rs.getString("seller_id"));
+                
                 list.add(orders);
             }
         } finally {
@@ -96,7 +92,7 @@ public class OrdersDAOImp implements OrdersDAO {
     }
 
     // =========================================================================
-    // 아래부터는 orderInsert 내부에서만 사용하는 private 도우미 메소드들입니다.
+    // 아래부터는 ordersInsert 내부에서만 사용하는 private 도우미 메소드들입니다.
     // 각 SQL 구문이 하나의 메소드로 깔끔하게 분리되어 있습니다.
     // =========================================================================
 
@@ -136,7 +132,7 @@ public class OrdersDAOImp implements OrdersDAO {
         }
     }
 
-    public int insertOrdersTable(Connection con, Orders orders) throws SQLException {
+    public int insertordersTable(Connection con, orders orders) throws SQLException {
         String sql = "INSERT INTO orders (product_id, buyer_id, status) VALUES (?, ?, 'PENDING')";
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, orders.getProductId());

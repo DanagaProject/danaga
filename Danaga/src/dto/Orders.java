@@ -11,7 +11,7 @@ package dto;
  * - code_id 9 → name 'COMPLETED' (완료)
  */
 public class Orders {
-        private int ordersId; // DB 컬럼: orders_id
+    private int ordersId; // DB 컬럼: orders_id
     private int productId;
     private String buyerId;
     private int statusId; // DB 실제 컬럼
