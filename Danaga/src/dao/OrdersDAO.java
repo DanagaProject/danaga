@@ -9,10 +9,11 @@ public interface OrdersDAO {
     /**
      * 다나가 중고상품 구매 신청 (내부에서 트랜잭션 처리)
      */
-    int orderInsert(Orders orders) throws SQLException;
+    int ordersInsert(Orders orders) throws SQLException;
 
     /**
      * 주문 내역 조회
      */
-    List<Orders> selectOrdersByUserId(String userId) throws SQLException;
+
+	List<Orders> selectordersByUserId(String userId) throws SQLException;
 }

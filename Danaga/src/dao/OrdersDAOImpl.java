@@ -8,11 +8,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import dao.OrdersDAO;
+
 import dto.Orders;
 import util.DBUtil;
 
-public class OrdersDAOImp implements OrdersDAO {
+public class OrdersDAOImpl implements OrdersDAO {
 
     @Override
     public int ordersInsert(Orders orders) throws SQLException {
@@ -46,7 +46,11 @@ public class OrdersDAOImp implements OrdersDAO {
         } catch (SQLException e) {
             // 실패 시 롤백
             if (con != null) {
-                try { con.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+                try { 
+                	con.rollback(); 
+                	} catch (SQLException ex) {
+                		ex.printStackTrace(); 
+                	}
             }
             throw e;
         } finally {
@@ -57,12 +61,14 @@ public class OrdersDAOImp implements OrdersDAO {
         return result;
     }
 
-    @Override
-    public List<orders> selectordersByUserId(String userId) throws SQLException {
+   
+
+	@Override
+    public List<Orders> selectordersByUserId(String userId) throws SQLException {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        List<orders> list = new ArrayList<>();
+        List<Orders> list = new ArrayList<>();
 
         try {
             con = DBUtil.getConnection();
@@ -76,8 +82,8 @@ public class OrdersDAOImp implements OrdersDAO {
             rs = ps.executeQuery();
             
             while (rs.next()) {
-                Orders orders = new orders();
-                orders.setordersId(rs.getInt("orders_id"));
+                Orders orders = new Orders();
+                orders.setOrdersId(rs.getInt("orders_id"));
                 orders.setProductId(rs.getInt("product_id"));
                 orders.setBuyerId(rs.getString("buyer_id"));
                 orders.setStatus(rs.getString("status"));
@@ -90,12 +96,24 @@ public class OrdersDAOImp implements OrdersDAO {
         }
         return list;
     }
-
-    // =========================================================================
-    // 아래부터는 ordersInsert 내부에서만 사용하는 private 도우미 메소드들입니다.
-    // 각 SQL 구문이 하나의 메소드로 깔끔하게 분리되어 있습니다.
-    // =========================================================================
-
+////////////////////////////////////////////////////////////////////////////////////
+	private void updateUserBalance(Connection con, String userId, int amount) throws SQLException {
+	    // amount가 음수면 차감, 양수면 증액이 되므로 쿼리는 하나로 충분합니다.
+	    String sql = "UPDATE users SET balance = balance + ? WHERE user_id = ?";
+	    
+	    try (PreparedStatement ps = con.prepareStatement(sql)) {
+	        ps.setInt(1, amount);
+	        ps.setString(2, userId);
+	        
+	        int result = ps.executeUpdate();
+	        
+	        // 중요: UserDAOImpl처럼 업데이트된 행이 없는 경우 예외 처리
+	        if (result == 0) {
+	            throw new SQLException("잔액 수정 실패: 사용자를 찾을 수 없습니다.");
+	        }
+	    }
+	}
+	
     public int selectProductPrice(Connection con, int productId) throws SQLException {
         String sql = "SELECT price, status FROM products WHERE product_id = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -123,16 +141,9 @@ public class OrdersDAOImp implements OrdersDAO {
         }
     }
 
-    public void updateUserBalance(Connection con, String userId, int price) throws SQLException {
-        String sql = "UPDATE users SET balance = balance + ? WHERE user_id = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, price);
-            ps.setString(2, userId);
-            ps.executeUpdate();
-        }
-    }
+    
 
-    public int insertordersTable(Connection con, orders orders) throws SQLException {
+    public int insertordersTable(Connection con, Orders orders) throws SQLException {
         String sql = "INSERT INTO orders (product_id, buyer_id, status) VALUES (?, ?, 'PENDING')";
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, orders.getProductId());
