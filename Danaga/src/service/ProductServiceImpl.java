@@ -12,19 +12,19 @@ import exception.ProductNotFoundException;
 public class ProductServiceImpl implements ProductService {
 
 	@Override
-	public List<Product> productSelectAll() throws ProductNotFoundException {
+	public List<Product> productSelectAll() throws ProductNotFoundException, DatabaseException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<Product> productSelectByCategory(int categoryId) throws ProductNotFoundException {
+	public List<Product> productSelectByCategory(int categoryId) throws ProductNotFoundException, DatabaseException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Product productSelectByName(String keyword) throws ProductNotFoundException {
+	public Product productSelectByName(String keyword) throws ProductNotFoundException, DatabaseException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -54,7 +54,13 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public int categoryInsert(Product product) throws DatabaseException {
+	public int categoryInsert(Category category) throws DatabaseException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	@Override
+	public int categoryUpdate(Category category) throws DatabaseException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
