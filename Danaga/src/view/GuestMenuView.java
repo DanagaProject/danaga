@@ -25,7 +25,7 @@ public class GuestMenuView {
             System.out.println("════════════════════════════════════════");
             System.out.println("  1.  상품 전체 목록 보기");
             System.out.println("  2.  카테고리별 검색");
-            System.out.println("  3.  상품번호로 검색");
+            System.out.println("  3.  상품 검색");
             System.out.println("  4.  로그인");
             System.out.println("  5.  회원가입");
             System.out.println("  6.  종료");
