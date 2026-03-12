@@ -10,7 +10,6 @@ select * from orders;
 select * from notifications;
 select * from favorite_categories;
 
-
 -- 1. 회원 테이블
 CREATE TABLE users (
     user_id VARCHAR(50) PRIMARY KEY,
@@ -75,12 +74,6 @@ CREATE TABLE favorite_categories (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE CASCADE
-);
-
--- 7. 상품 품질 테이블
-CREATE TABLE product_condition(
-	condition_id INT AUTO_INCREMENT PRIMARY KEY,
-    pro_condition CHAR(1)
 );
 
 -- 인덱스 생성

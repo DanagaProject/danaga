@@ -10,8 +10,8 @@ public class Product {
     private String title;
     private int price;
     private String description;
-    private String itemCondition;
-    private String status;
+    private int itemCondition;
+    private int status;
     private String createdAt;
 
     // JOIN용 추가 필드
@@ -24,7 +24,7 @@ public class Product {
 
     // 등록용 생성자 (ID, status, createdAt 제외)
     public Product(String sellerId, int categoryId, String title, int price,
-                   String description, String itemCondition) {
+                   String description, int itemCondition) {
         this.sellerId = sellerId;
         this.categoryId = categoryId;
         this.title = title;
@@ -36,8 +36,8 @@ public class Product {
 
     // 전체 필드 생성자
     public Product(int productId, String sellerId, int categoryId, String title,
-                   int price, String description, String itemCondition,
-                   String status, String createdAt) {
+                   int price, String description, int itemCondition,
+                   int status, String createdAt) {
         this.productId = productId;
         this.sellerId = sellerId;
         this.categoryId = categoryId;
@@ -98,19 +98,19 @@ public class Product {
         this.description = description;
     }
 
-    public String getItemCondition() {
+    public int getItemCondition() {
         return itemCondition;
     }
 
-    public void setItemCondition(String itemCondition) {
+    public void setItemCondition(int itemCondition) {
         this.itemCondition = itemCondition;
     }
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 
