@@ -92,13 +92,11 @@ public class Orders {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "Orders{" +
-                "ordersId=" + ordersId +
-                ", statusId=" + statusId +
-                ", status='" + status + '\'' +
-                ", createdAt='" + createdAt + '\'' +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "Orders [ordersId=" + ordersId + ", productId=" + productId + ", buyerId=" + buyerId + ", statusId="
+				+ statusId + ", createdAt=" + createdAt + ", status=" + status + "]";
+	}
+
+  
 }
