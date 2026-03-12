@@ -18,6 +18,9 @@ public class Orders {
     private String createdAt;
 
     // JOIN용 추가 필드
+    private String productTitle;
+    private int productPrice;
+    private String sellerId;
     private String status; // code 테이블과 JOIN해서 얻은 name 값 (PENDING/SHIPPING/COMPLETED 등)
 
     // 기본 생성자
@@ -84,6 +87,30 @@ public class Orders {
         this.createdAt = createdAt;
     }
 
+    public String getProductTitle() {
+        return productTitle;
+    }
+
+    public void setProductTitle(String productTitle) {
+        this.productTitle = productTitle;
+    }
+
+    public int getProductPrice() {
+        return productPrice;
+    }
+
+    public void setProductPrice(int productPrice) {
+        this.productPrice = productPrice;
+    }
+
+    public String getSellerId() {
+        return sellerId;
+    }
+
+    public void setSellerId(String sellerId) {
+        this.sellerId = sellerId;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -92,6 +119,7 @@ public class Orders {
         this.status = status;
     }
 
+
 	@Override
 	public String toString() {
 		return "Orders [ordersId=" + ordersId + ", productId=" + productId + ", buyerId=" + buyerId + ", statusId="
@@ -99,4 +127,5 @@ public class Orders {
 	}
 
   
+
 }

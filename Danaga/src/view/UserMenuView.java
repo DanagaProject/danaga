@@ -27,7 +27,7 @@ public class UserMenuView {
             System.out.println("  [상품 조회]");
             System.out.println("  1.  상품 전체 목록 보기");
             System.out.println("  2.  카테고리별 검색");
-            System.out.println("  3.  상품 검색");
+            System.out.println("  3.  상품명으로 검색");
             System.out.println("  [기타]");
             System.out.println("  4.  마이페이지");
             System.out.println("  5.  로그아웃");

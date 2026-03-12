@@ -13,12 +13,12 @@ public interface UserService {
     /**
      * 회원가입
      */
-    void signup(String userId, String password) throws DuplicateUserException, DatabaseException;
+    void signup(User user) throws DuplicateUserException, DatabaseException;
 
     /**
      * 로그인
      */
-    User login(String userId, String password) throws UserNotFoundException, DatabaseException;
+    User login(User user) throws UserNotFoundException, DatabaseException;
 
     /**
      * 로그아웃

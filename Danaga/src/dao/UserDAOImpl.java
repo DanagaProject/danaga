@@ -61,15 +61,14 @@ public class UserDAOImpl implements UserDAO {
     }
 
     /**
-     * 로그인 - 아이디와 비밀번호로 회원 조회
+     * 로그인 - User 객체로 회원 조회
      * code 테이블과 JOIN하여 status_id에 해당하는 value를 status로 조회
-     * @param userId 사용자 ID
-     * @param password 비밀번호
+     * @param user User 객체 (userId, password 필요)
      * @return 조회된 회원 정보, 없으면 null
      * @throws DatabaseException DB 오류 발생 시
      */
     @Override
-    public User selectByIdAndPassword(String userId, String password) throws DatabaseException {
+    public User selectByUser(User user) throws DatabaseException {
         String sql = "SELECT u.user_id, u.password, u.balance, u.status_id, c.name AS status, u.role " +
                      "FROM user u " +
                      "INNER JOIN code c ON u.status_id = c.code_id " +
@@ -83,20 +82,20 @@ public class UserDAOImpl implements UserDAO {
             con = DBUtil.getConnection();
             pstmt = con.prepareStatement(sql);
 
-            pstmt.setString(1, userId);
-            pstmt.setString(2, password);
+            pstmt.setString(1, user.getUserId());
+            pstmt.setString(2, user.getPassword());
 
             rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                User user = new User(
+                User foundUser = new User(
                         rs.getString("user_id"),
                         rs.getString("password"),
                         rs.getInt("balance"),
                         rs.getInt("status_id"), // statusId (int)
                         rs.getString("role"));
-                user.setStatus(rs.getString("status")); // JOIN으로 얻은 status 설정
-                return user;
+                foundUser.setStatus(rs.getString("status")); // JOIN으로 얻은 status 설정
+                return foundUser;
             }
 
             return null; // 로그인 실패
@@ -110,12 +109,12 @@ public class UserDAOImpl implements UserDAO {
 
     /**
      * 아이디 중복 확인
-     * @param userId 확인할 사용자 ID
+     * @param user User 객체 (userId 필요)
      * @return 아이디가 존재하면 true, 없으면 false
      * @throws DatabaseException DB 오류 발생 시
      */
     @Override
-    public boolean existsById(String userId) throws DatabaseException {
+    public boolean existsById(User user) throws DatabaseException {
         String sql = "SELECT COUNT(*) FROM user WHERE user_id = ?";
 
         Connection con = null;
@@ -125,7 +124,7 @@ public class UserDAOImpl implements UserDAO {
         try {
             con = DBUtil.getConnection();
             pstmt = con.prepareStatement(sql);
-            pstmt.setString(1, userId);
+            pstmt.setString(1, user.getUserId());
 
             rs = pstmt.executeQuery();
 
@@ -145,12 +144,12 @@ public class UserDAOImpl implements UserDAO {
     /**
      * 아이디로 회원 조회
      * code 테이블과 JOIN하여 status_id에 해당하는 value를 status로 조회
-     * @param userId 조회할 사용자 ID
+     * @param user User 객체 (userId 필요)
      * @return 조회된 회원 정보, 없으면 null
      * @throws DatabaseException DB 오류 발생 시
      */
     @Override
-    public User selectById(String userId) throws DatabaseException {
+    public User selectById(User user) throws DatabaseException {
         String sql = "SELECT u.user_id, u.password, u.balance, u.status_id, c.name AS status, u.role " +
                      "FROM user u " +
                      "INNER JOIN code c ON u.status_id = c.code_id " +
@@ -163,19 +162,19 @@ public class UserDAOImpl implements UserDAO {
         try {
             con = DBUtil.getConnection();
             pstmt = con.prepareStatement(sql);
-            pstmt.setString(1, userId);
+            pstmt.setString(1, user.getUserId());
 
             rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                User user = new User(
+                User foundUser = new User(
                         rs.getString("user_id"),
                         rs.getString("password"),
                         rs.getInt("balance"),
                         rs.getInt("status_id"), // statusId (int)
                         rs.getString("role"));
-                user.setStatus(rs.getString("status")); // JOIN으로 얻은 status 설정
-                return user;
+                foundUser.setStatus(rs.getString("status")); // JOIN으로 얻은 status 설정
+                return foundUser;
             }
 
             return null;
@@ -233,11 +232,11 @@ public class UserDAOImpl implements UserDAO {
 
     /**
      * 회원 차단하기 (status_id = 13, code 테이블의 BANNED로 변경)
-     * @param userId 차단할 사용자 ID
+     * @param user User 객체 (userId 필요)
      * @throws DatabaseException DB 오류 발생 시 또는 회원이 존재하지 않는 경우
      */
     @Override
-    public void blockUser(String userId) throws DatabaseException {
+    public void blockUser(User user) throws DatabaseException {
         String sql = "UPDATE user SET status_id = 13 WHERE user_id = ?";
 
         Connection con = null;
@@ -247,7 +246,7 @@ public class UserDAOImpl implements UserDAO {
             con = DBUtil.getConnection();
             pstmt = con.prepareStatement(sql);
 
-            pstmt.setString(1, userId);
+            pstmt.setString(1, user.getUserId());
 
             int result = pstmt.executeUpdate();
 
@@ -264,11 +263,11 @@ public class UserDAOImpl implements UserDAO {
 
     /**
      * 회원 차단 풀기 (status_id = 12, code 테이블의 ACTIVE로 변경)
-     * @param userId 차단 해제할 사용자 ID
+     * @param user User 객체 (userId 필요)
      * @throws DatabaseException DB 오류 발생 시 또는 회원이 존재하지 않는 경우
      */
     @Override
-    public void unblockUser(String userId) throws DatabaseException {
+    public void unblockUser(User user) throws DatabaseException {
         String sql = "UPDATE user SET status_id = 12 WHERE user_id = ?";
 
         Connection con = null;
@@ -278,7 +277,7 @@ public class UserDAOImpl implements UserDAO {
             con = DBUtil.getConnection();
             pstmt = con.prepareStatement(sql);
 
-            pstmt.setString(1, userId);
+            pstmt.setString(1, user.getUserId());
 
             int result = pstmt.executeUpdate();
 
@@ -295,12 +294,12 @@ public class UserDAOImpl implements UserDAO {
 
     /**
      * 잔액 충전 (balance 증가)
-     * @param userId 사용자 ID
+     * @param user User 객체 (userId 필요)
      * @param amount 충전할 금액
      * @throws DatabaseException DB 오류 발생 시 또는 회원이 존재하지 않는 경우
      */
     @Override
-    public void chargeBalance(String userId, int amount) throws DatabaseException {
+    public void chargeBalance(User user, int amount) throws DatabaseException {
         String sql = "UPDATE user SET balance = balance + ? WHERE user_id = ?";
 
         Connection con = null;
@@ -311,7 +310,7 @@ public class UserDAOImpl implements UserDAO {
             pstmt = con.prepareStatement(sql);
 
             pstmt.setInt(1, amount);
-            pstmt.setString(2, userId);
+            pstmt.setString(2, user.getUserId());
 
             int result = pstmt.executeUpdate();
 
@@ -328,12 +327,12 @@ public class UserDAOImpl implements UserDAO {
 
     /**
      * 잔액 차감 (balance 감소)
-     * @param userId 사용자 ID
+     * @param user User 객체 (userId 필요)
      * @param amount 차감할 금액
      * @throws DatabaseException DB 오류 발생 시 또는 회원이 존재하지 않는 경우
      */
     @Override
-    public void deductBalance(String userId, int amount) throws DatabaseException {
+    public void deductBalance(User user, int amount) throws DatabaseException {
         String sql = "UPDATE user SET balance = balance - ? WHERE user_id = ?";
 
         Connection con = null;
@@ -344,7 +343,7 @@ public class UserDAOImpl implements UserDAO {
             pstmt = con.prepareStatement(sql);
 
             pstmt.setInt(1, amount);
-            pstmt.setString(2, userId);
+            pstmt.setString(2, user.getUserId());
 
             int result = pstmt.executeUpdate();
 
