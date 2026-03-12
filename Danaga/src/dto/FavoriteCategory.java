@@ -4,6 +4,7 @@ package dto;
  * 즐겨찾기 카테고리 DTO
  */
 public class FavoriteCategory {
+    private int favId;
     private String userId;
     private int categoryId;
 
@@ -14,13 +15,28 @@ public class FavoriteCategory {
     public FavoriteCategory() {
     }
 
-    // 등록용 생성자
+    // 등록용 생성자 (favId 제외)
     public FavoriteCategory(String userId, int categoryId) {
         this.userId = userId;
         this.categoryId = categoryId;
     }
 
+    // 전체 필드 생성자
+    public FavoriteCategory(int favId, String userId, int categoryId) {
+        this.favId = favId;
+        this.userId = userId;
+        this.categoryId = categoryId;
+    }
+
     // Getters and Setters
+    public int getFavId() {
+        return favId;
+    }
+
+    public void setFavId(int favId) {
+        this.favId = favId;
+    }
+
     public String getUserId() {
         return userId;
     }
@@ -48,7 +64,8 @@ public class FavoriteCategory {
     @Override
     public String toString() {
         return "FavoriteCategory{" +
-                "userId='" + userId + '\'' +
+                "favId=" + favId +
+                ", userId='" + userId + '\'' +
                 ", categoryId=" + categoryId +
                 ", categoryName='" + categoryName + '\'' +
                 '}';
