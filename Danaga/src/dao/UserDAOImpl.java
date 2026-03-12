@@ -32,7 +32,7 @@ public class UserDAOImpl implements UserDAO {
      */
     @Override
     public void insert(User user) throws DatabaseException {
-        String sql = "INSERT INTO users (user_id, password, balance, status_id, role) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO user (user_id, password, balance, status_id, role) VALUES (?, ?, ?, ?, ?)";
 
         Connection con = null;
         PreparedStatement pstmt = null;
@@ -70,9 +70,9 @@ public class UserDAOImpl implements UserDAO {
      */
     @Override
     public User selectByIdAndPassword(String userId, String password) throws DatabaseException {
-        String sql = "SELECT u.user_id, u.password, u.balance, c.value AS status, u.role " +
-                     "FROM users u " +
-                     "INNER JOIN code c ON u.status_id = c.id " +
+        String sql = "SELECT u.user_id, u.password, u.balance, u.status_id, c.name AS status, u.role " +
+                     "FROM user u " +
+                     "INNER JOIN code c ON u.status_id = c.code_id " +
                      "WHERE u.user_id = ? AND u.password = ?";
 
         Connection con = null;
@@ -89,12 +89,14 @@ public class UserDAOImpl implements UserDAO {
             rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                return new User(
+                User user = new User(
                         rs.getString("user_id"),
                         rs.getString("password"),
                         rs.getInt("balance"),
-                        rs.getString("status"), // code 테이블의 value 값
+                        rs.getInt("status_id"), // statusId (int)
                         rs.getString("role"));
+                user.setStatus(rs.getString("status")); // JOIN으로 얻은 status 설정
+                return user;
             }
 
             return null; // 로그인 실패
@@ -114,7 +116,7 @@ public class UserDAOImpl implements UserDAO {
      */
     @Override
     public boolean existsById(String userId) throws DatabaseException {
-        String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
+        String sql = "SELECT COUNT(*) FROM user WHERE user_id = ?";
 
         Connection con = null;
         PreparedStatement pstmt = null;
@@ -149,9 +151,9 @@ public class UserDAOImpl implements UserDAO {
      */
     @Override
     public User selectById(String userId) throws DatabaseException {
-        String sql = "SELECT u.user_id, u.password, u.balance, c.value AS status, u.role " +
-                     "FROM users u " +
-                     "INNER JOIN code c ON u.status_id = c.id " +
+        String sql = "SELECT u.user_id, u.password, u.balance, u.status_id, c.name AS status, u.role " +
+                     "FROM user u " +
+                     "INNER JOIN code c ON u.status_id = c.code_id " +
                      "WHERE u.user_id = ?";
 
         Connection con = null;
@@ -166,12 +168,14 @@ public class UserDAOImpl implements UserDAO {
             rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                return new User(
+                User user = new User(
                         rs.getString("user_id"),
                         rs.getString("password"),
                         rs.getInt("balance"),
-                        rs.getString("status"), // code 테이블의 value 값
+                        rs.getInt("status_id"), // statusId (int)
                         rs.getString("role"));
+                user.setStatus(rs.getString("status")); // JOIN으로 얻은 status 설정
+                return user;
             }
 
             return null;
@@ -191,9 +195,9 @@ public class UserDAOImpl implements UserDAO {
      */
     @Override
     public List<User> selectBlockedUsers() throws DatabaseException {
-        String sql = "SELECT u.user_id, u.password, u.balance, c.value AS status, u.role " +
-                     "FROM users u " +
-                     "INNER JOIN code c ON u.status_id = c.id " +
+        String sql = "SELECT u.user_id, u.password, u.balance, u.status_id, c.name AS status, u.role " +
+                     "FROM user u " +
+                     "INNER JOIN code c ON u.status_id = c.code_id " +
                      "WHERE u.status_id = 13";
 
         Connection con = null;
@@ -212,8 +216,9 @@ public class UserDAOImpl implements UserDAO {
                         rs.getString("user_id"),
                         rs.getString("password"),
                         rs.getInt("balance"),
-                        rs.getString("status"), // code 테이블의 value 값
+                        rs.getInt("status_id"), // statusId (int)
                         rs.getString("role"));
+                user.setStatus(rs.getString("status")); // JOIN으로 얻은 status 설정
                 blockedUsers.add(user);
             }
 
@@ -233,7 +238,7 @@ public class UserDAOImpl implements UserDAO {
      */
     @Override
     public void blockUser(String userId) throws DatabaseException {
-        String sql = "UPDATE users SET status_id = 13 WHERE user_id = ?";
+        String sql = "UPDATE user SET status_id = 13 WHERE user_id = ?";
 
         Connection con = null;
         PreparedStatement pstmt = null;
@@ -264,7 +269,7 @@ public class UserDAOImpl implements UserDAO {
      */
     @Override
     public void unblockUser(String userId) throws DatabaseException {
-        String sql = "UPDATE users SET status_id = 12 WHERE user_id = ?";
+        String sql = "UPDATE user SET status_id = 12 WHERE user_id = ?";
 
         Connection con = null;
         PreparedStatement pstmt = null;
@@ -296,7 +301,7 @@ public class UserDAOImpl implements UserDAO {
      */
     @Override
     public void chargeBalance(String userId, int amount) throws DatabaseException {
-        String sql = "UPDATE users SET balance = balance + ? WHERE user_id = ?";
+        String sql = "UPDATE user SET balance = balance + ? WHERE user_id = ?";
 
         Connection con = null;
         PreparedStatement pstmt = null;
@@ -329,7 +334,7 @@ public class UserDAOImpl implements UserDAO {
      */
     @Override
     public void deductBalance(String userId, int amount) throws DatabaseException {
-        String sql = "UPDATE users SET balance = balance - ? WHERE user_id = ?";
+        String sql = "UPDATE user SET balance = balance - ? WHERE user_id = ?";
 
         Connection con = null;
         PreparedStatement pstmt = null;

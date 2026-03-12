@@ -1,7 +1,7 @@
 package dto;
 
 /**
- * 주문 DTO
+ * 주문 DTO (orders 테이블)
  * status 값 매핑 (code 테이블):
  * - code_id 4 → name 'PENDING' (대기중)
  * - code_id 5 → name 'SHIPPING' (배송중)
@@ -10,8 +10,8 @@ package dto;
  * - code_id 8 → name 'CANCEL_REJECTED' (취소 거부)
  * - code_id 9 → name 'COMPLETED' (완료)
  */
-public class Order {
-    private int orderId;
+public class Orders {
+    private int ordersId; // DB 컬럼: orders_id
     private int productId;
     private String buyerId;
     private int statusId; // DB 실제 컬럼
@@ -24,19 +24,19 @@ public class Order {
     private String status; // code 테이블과 JOIN해서 얻은 name 값 (PENDING/SHIPPING/COMPLETED 등)
 
     // 기본 생성자
-    public Order() {
+    public Orders() {
     }
 
     // 등록용 생성자 (ID, createdAt 제외)
-    public Order(int productId, String buyerId) {
+    public Orders(int productId, String buyerId) {
         this.productId = productId;
         this.buyerId = buyerId;
         this.statusId = 4; // PENDING
     }
 
     // 전체 필드 생성자
-    public Order(int orderId, int productId, String buyerId, int statusId, String createdAt) {
-        this.orderId = orderId;
+    public Orders(int ordersId, int productId, String buyerId, int statusId, String createdAt) {
+        this.ordersId = ordersId;
         this.productId = productId;
         this.buyerId = buyerId;
         this.statusId = statusId;
@@ -44,12 +44,12 @@ public class Order {
     }
 
     // Getters and Setters
-    public int getOrderId() {
-        return orderId;
+    public int getOrdersId() {
+        return ordersId;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
+    public void setOrdersId(int ordersId) {
+        this.ordersId = ordersId;
     }
 
     public int getProductId() {
@@ -119,7 +119,7 @@ public class Order {
     @Override
     public String toString() {
         return "Order{" +
-                "orderId=" + orderId +
+                "ordersId=" + ordersId +
                 ", productTitle='" + productTitle + '\'' +
                 ", productPrice=" + productPrice +
                 ", statusId=" + statusId +
