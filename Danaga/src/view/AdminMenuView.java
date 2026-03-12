@@ -22,7 +22,7 @@ public class AdminMenuView {
             System.out.println("  🔧  관리자       🔔  새 알림 표시 예정");
             System.out.println("════════════════════════════════════════");
             System.out.println("  [상품 조회]");
-            System.out.println("  1. 상품목록  2. 카테고리검색  3. 번호검색");
+            System.out.println("  1. 상품 목록  2. 카테고리 검색  3. 상품 검색");
             System.out.println("════════════════════════════════════════");
             System.out.println("  [거래 관리]");
             System.out.println("  4.  취소요청 목록");
