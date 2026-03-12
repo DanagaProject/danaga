@@ -26,7 +26,6 @@ public class Product {
 
     // JOIN용 추가 필드
     private String categoryName;
-    private String sellerName;
     private String itemCondition; // code 테이블과 JOIN해서 얻은 name 값 (상/중/하)
     private String status; // code 테이블과 JOIN해서 얻은 name 값 (ON_SALE/RESERVED)
 
@@ -140,14 +139,6 @@ public class Product {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
-    }
-
-    public String getSellerName() {
-        return sellerName;
-    }
-
-    public void setSellerName(String sellerName) {
-        this.sellerName = sellerName;
     }
 
     public String getItemCondition() {
