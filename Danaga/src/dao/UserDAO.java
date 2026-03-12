@@ -15,19 +15,19 @@ public interface UserDAO {
     void insert(User user) throws DatabaseException;
 
     /**
-     * 로그인 - 아이디와 비밀번호로 회원 조회
+     * 로그인 - User 객체로 회원 조회
      */
-    User selectByIdAndPassword(String userId, String password) throws DatabaseException;
+    User selectByUser(User user) throws DatabaseException;
 
     /**
      * 아이디 중복 확인
      */
-    boolean existsById(String userId) throws DatabaseException;
+    boolean existsById(User user) throws DatabaseException;
 
     /**
      * 아이디로 회원 조회
      */
-    User selectById(String userId) throws DatabaseException;
+    User selectById(User user) throws DatabaseException;
 
     /**
      * 차단된 회원 목록 조회 (status_id = 13, code 테이블의 BANNED)
@@ -37,20 +37,20 @@ public interface UserDAO {
     /**
      * 회원 차단하기 (status_id = 13, code 테이블의 BANNED로 변경)
      */
-    void blockUser(String userId) throws DatabaseException;
+    void blockUser(User user) throws DatabaseException;
 
     /**
      * 회원 차단 풀기 (status_id = 12, code 테이블의 ACTIVE로 변경)
      */
-    void unblockUser(String userId) throws DatabaseException;
+    void unblockUser(User user) throws DatabaseException;
 
     /**
      * 잔액 충전
      */
-    void chargeBalance(String userId, int amount) throws DatabaseException;
+    void chargeBalance(User user, int amount) throws DatabaseException;
 
     /**
      * 잔액 차감
      */
-    void deductBalance(String userId, int amount) throws DatabaseException;
+    void deductBalance(User user, int amount) throws DatabaseException;
 }

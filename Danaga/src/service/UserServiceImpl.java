@@ -26,75 +26,72 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 회원가입 처리
-     * @param userId 사용자 ID
-     * @param password 비밀번호
+     * @param user User 객체 (userId, password 필요)
      * @throws DuplicateUserException 중복된 아이디인 경우
      * @throws DatabaseException DB 오류 발생 시
      */
     @Override
-    public void signup(String userId, String password)
+    public void signup(User user)
             throws DuplicateUserException, DatabaseException {
 
         // 1. 입력 값 검증
-        if (userId == null || userId.trim().isEmpty()) {
+        if (user.getUserId() == null || user.getUserId().trim().isEmpty()) {
             throw new IllegalArgumentException("아이디를 입력해주세요.");
         }
-        if (password == null || password.trim().isEmpty()) {
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
             throw new IllegalArgumentException("비밀번호를 입력해주세요.");
         }
 
         // 2. 아이디 중복 확인
-        if (userDAO.existsById(userId)) {
-            throw new DuplicateUserException("이미 존재하는 아이디입니다: " + userId);
+        if (userDAO.existsById(user)) {
+            throw new DuplicateUserException("이미 존재하는 아이디입니다: " + user.getUserId());
         }
 
-        // 3. 회원 정보 생성 및 저장
-        User newUser = new User(userId, password);
-        userDAO.insert(newUser);
+        // 3. 회원 정보 저장
+        userDAO.insert(user);
 
-        System.out.println("[UserService] 회원가입 성공: " + userId);
+        System.out.println("[UserService] 회원가입 성공: " + user.getUserId());
     }
 
     /**
      * 로그인 처리
-     * @param userId 사용자 ID
-     * @param password 비밀번호
+     * @param user User 객체 (userId, password 필요)
      * @return 로그인한 사용자 정보
      * @throws UserNotFoundException 사용자를 찾을 수 없거나 비밀번호가 일치하지 않는 경우
      * @throws DatabaseException DB 오류 발생 시
      */
     @Override
-    public User login(String userId, String password)
+    public User login(User user)
             throws UserNotFoundException, DatabaseException {
 
         // 1. 입력 값 검증
-        if (userId == null || userId.trim().isEmpty()) {
+        if (user.getUserId() == null || user.getUserId().trim().isEmpty()) {
             throw new IllegalArgumentException("아이디를 입력해주세요.");
         }
-        if (password == null || password.trim().isEmpty()) {
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
             throw new IllegalArgumentException("비밀번호를 입력해주세요.");
         }
 
         // 2. 회원 조회
-        User user = userDAO.selectByIdAndPassword(userId, password);
+        User foundUser = userDAO.selectByUser(user);
 
-        if (user == null) {
+        if (foundUser == null) {
             throw new UserNotFoundException("아이디 또는 비밀번호가 일치하지 않습니다.");
         }
 
         // 3. 계정 상태 확인
-        if ("BANNED".equals(user.getStatus())) {
+        if ("BANNED".equals(foundUser.getStatus())) {
             throw new UserNotFoundException("차단된 계정입니다.");
         }
-        if ("INACTIVE".equals(user.getStatus())) {
+        if ("INACTIVE".equals(foundUser.getStatus())) {
             throw new UserNotFoundException("비활성화된 계정입니다.");
         }
 
         // 4. 세션에 로그인 정보 저장
-        SessionManager.login(user);
+        SessionManager.login(foundUser);
 
-        System.out.println("[UserService] 로그인 성공: " + userId);
-        return user;
+        System.out.println("[UserService] 로그인 성공: " + foundUser.getUserId());
+        return foundUser;
     }
 
     /**
