@@ -26,7 +26,7 @@ public interface ProductDAO {
 	/**
 	 * 상품명으로 상품 조회
 	 * */
-	Product productSelectByName(String keyword) throws ProductNotFoundException, DatabaseException;
+	List<Product> productSelectByName(String keyword) throws ProductNotFoundException, DatabaseException;
 	
 	/**
 	 * 상품 등록
@@ -51,7 +51,7 @@ public interface ProductDAO {
 	/**
 	 * 카테고리 추가
 	 * */
-	int categoryInsert(Category category) throws DatabaseException;
+	int categoryInsert(String name) throws DatabaseException;
 	
 	/**
 	 * 카테고리 수정 

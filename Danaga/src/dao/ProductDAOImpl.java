@@ -32,7 +32,7 @@ public class ProductDAOImpl implements ProductDAO {
 		ResultSet rs = null;
 		List<Product> list = new ArrayList<>();
 		Product product = null;
-		String sql = "select * from product where is_deleted = 'n' order by product_id";
+		String sql = "select * from product where is_deleted = 'n' order by product_id desc";
 	
 		try {
 			con = DBUtil.getConnection();
@@ -40,18 +40,20 @@ public class ProductDAOImpl implements ProductDAO {
 			rs = ps.executeQuery();
 			
 			while(rs.next()) {
-				int productId=rs.getInt(1); 
-			    String sellerId=rs.getString(2);
-			    int categoryId=rs.getInt(3);
-			    String title=rs.getString(4);
-			    int price=rs.getInt(5);
-			    String description=rs.getString(6);
-			    int conditionId=rs.getInt(7);
-			    String createdAt=rs.getString(8);
-			    int statusId=rs.getInt(10);
+			    int categoryId=rs.getInt("category_id");
+			    int conditionId=rs.getInt("condition_id");
+			    int statusId=rs.getInt("status_id");
 			    
-				product = new Product(productId, sellerId, categoryId, title, 
-									price, description, conditionId, statusId, createdAt);
+				product = new Product(
+						rs.getInt("product_id"), 
+						rs.getString("seller_id"), 
+						categoryId, 
+						rs.getString("title"), 
+						rs.getInt("price"), 
+						rs.getString("description"), 
+						conditionId, 
+						statusId, 
+						rs.getString("created_at"));
 				
 				//이름 가져오기
 				String categoryName = this.categoryNameSelect(con, categoryId);
@@ -79,7 +81,7 @@ public class ProductDAOImpl implements ProductDAO {
 		ResultSet rs = null;
 		Product product = null;
 		List<Product> list = new ArrayList<>();
-		String sql = "select * from product where category_id = ?, is_deleted = 'n' order by product_id";
+		String sql = "select * from product where category_id = ? and is_deleted = 'n' order by product_id desc";
 		
 		try {
 			con = DBUtil.getConnection();
@@ -89,17 +91,19 @@ public class ProductDAOImpl implements ProductDAO {
 			
 			rs = ps.executeQuery();
 			while(rs.next()) {
-				int productId=rs.getInt(1); 
-			    String sellerId=rs.getString(2);
-			    String title=rs.getString(4);
-			    int price=rs.getInt(5);
-			    String description=rs.getString(6);
-			    int conditionId=rs.getInt(7);
-			    String createdAt=rs.getString(8);
-			    int statusId=rs.getInt(10);
+			    int conditionId=rs.getInt("condition_id");
+			    int statusId=rs.getInt("status_id");
 			    
-				product = new Product(productId, sellerId, categoryId, title, 
-									price, description, conditionId, statusId, createdAt);
+				product = new Product(
+						rs.getInt("product_id"), 
+						rs.getString("seller_id"), 
+						categoryId, 
+						rs.getString("title"), 
+						rs.getInt("price"), 
+						rs.getString("description"), 
+						conditionId, 
+						statusId, 
+						rs.getString("created_at"));
 				
 				//이름 가져오기
 				String categoryName = this.categoryNameSelect(con, categoryId);
@@ -122,12 +126,13 @@ public class ProductDAOImpl implements ProductDAO {
 	}
 
 	@Override
-	public Product productSelectByName(String keyword) throws ProductNotFoundException, DatabaseException {
+	public List<Product> productSelectByName(String keyword) throws ProductNotFoundException, DatabaseException {
 		Connection con=null;
 		PreparedStatement ps=null;
 		ResultSet rs = null;
+		List<Product> list = new ArrayList<>();
 		Product product = null;
-		String sql = "select * from product where title like ?, is_deleted = 'n' order by product_id";
+		String sql = "select * from product where title like ? and is_deleted = 'n'";
 		
 		try {
 			con = DBUtil.getConnection();
@@ -136,19 +141,21 @@ public class ProductDAOImpl implements ProductDAO {
 			ps.setString(1, "%"+keyword+"%");
 			
 			rs = ps.executeQuery();
-			if(rs.next()) {
-				int productId=rs.getInt(1); 
-			    String sellerId=rs.getString(2);
-			    int categoryId=rs.getInt(3);
-			    String title=rs.getString(4);
-			    int price=rs.getInt(5);
-			    String description=rs.getString(6);
-			    int conditionId=rs.getInt(7);
-			    String createdAt=rs.getString(8);
-			    int statusId=rs.getInt(10);
+			while(rs.next()) {
+			    int categoryId=rs.getInt("category_id");
+			    int conditionId=rs.getInt("condition_id");
+			    int statusId=rs.getInt("status_id");
 			    
-				product = new Product(productId, sellerId, categoryId, title, 
-									price, description, conditionId, statusId, createdAt);
+				product = new Product(
+						rs.getInt("product_id"), 
+						rs.getString("seller_id"), 
+						categoryId, 
+						rs.getString("title"), 
+						rs.getInt("price"), 
+						rs.getString("description"), 
+						conditionId, 
+						statusId, 
+						rs.getString("created_at"));
 				
 				//이름 가져오기
 				String categoryName = this.categoryNameSelect(con, categoryId);
@@ -157,23 +164,25 @@ public class ProductDAOImpl implements ProductDAO {
 				product.setStatus(status);
 				String itemCondition = this.conditionNameSelect(con, conditionId);
 				product.setItemCondition(itemCondition);
+				
+				list.add(product);
 			}
 		}catch(SQLException e) {
 			e.printStackTrace();
-			throw new ProductNotFoundException("해당하는 카테고리의 상품 목록을 찾지 못했습니다.");
+			throw new ProductNotFoundException("해당 제목의 상품을 찾지 못했습니다.");
 		}finally {
 			DBUtil.close(con,ps,rs);
 		}
 		
-		return product;
-	}
+		return list;
+	}	
 
 	@Override
 	public int productInsert(Product product) throws DatabaseException {
 		Connection con=null;
 		PreparedStatement ps=null;
-		String sql = "insert into product(seller_id, category_id, title, price, condition_id, description) "
-				+ "values( ?, ?, ?, ?, ?, ?)";
+		String sql = "insert into product(seller_id, category_id, title, price, condition_id, description, status_id) "
+				+ "values( ?, ?, ?, ?, ?, ?, ?)";
 		int result = 0;
 		
 		try {
@@ -186,6 +195,7 @@ public class ProductDAOImpl implements ProductDAO {
 			ps.setInt(4, product.getPrice());
 			ps.setInt(5, product.getConditionId());
 			ps.setString(6, product.getDescription());
+			ps.setInt(7, product.getStatusId());
 			
 			result = ps.executeUpdate();
 			
@@ -260,7 +270,7 @@ public class ProductDAOImpl implements ProductDAO {
 	public int productDelete(int productId) throws ProductNotFoundException {
 		Connection con=null;
 		PreparedStatement ps=null;
-		String sql = "delete from product where product_id = ?";
+		String sql = "update product set is_deleted = 'y' where product_id = ?";
 		int result = 0;
 		
 		try {
@@ -313,7 +323,7 @@ public class ProductDAOImpl implements ProductDAO {
 	}
 
 	@Override
-	public int categoryInsert(Category category) throws DatabaseException {
+	public int categoryInsert(String name) throws DatabaseException {
 		Connection con=null;
 		PreparedStatement ps=null;
 		String sql = "insert into category(name) values(?)";
@@ -322,7 +332,7 @@ public class ProductDAOImpl implements ProductDAO {
 		try {
 			con = DBUtil.getConnection();
 			ps = con.prepareStatement(sql);
-			ps.setString(1, category.getName());
+			ps.setString(1, name);
 			
 			result = ps.executeUpdate();
 			
@@ -340,13 +350,14 @@ public class ProductDAOImpl implements ProductDAO {
 	public int categoryUpdate(Category category) throws CategoryNotFoundException{
 		Connection con=null;
 		PreparedStatement ps=null;
-		String sql = "update category set name where category_id = ?";
+		String sql = "update category set name = ? where category_id = ?";
 		int result = 0;
 		
 		try {
 			con = DBUtil.getConnection();
 			ps = con.prepareStatement(sql);
-			ps.setInt(1, category.getCategoryId());
+			ps.setString(1, category.getName());
+			ps.setInt(2, category.getCategoryId());
 			
 			result = ps.executeUpdate();
 		}catch(SQLException e) {
@@ -484,9 +495,9 @@ public class ProductDAOImpl implements ProductDAO {
 			ps = con.prepareStatement(sql);
 			ps.setInt(1, categoryId);
 			rs = ps.executeQuery();
-			
-			categoryName = rs.getString(1);
-			
+			if(rs.next()){
+				categoryName = rs.getString(1);
+			}		
 		}catch(SQLException e) {
 			e.printStackTrace();
 			throw new DatabaseException("해당하는 카데고리가 없습니다.");
@@ -509,9 +520,9 @@ public class ProductDAOImpl implements ProductDAO {
 			ps = con.prepareStatement(sql);
 			ps.setInt(1, statusId);
 			rs = ps.executeQuery();
-			
-			status = rs.getString(1);
-			
+			if(rs.next()) {
+				status = rs.getString(1);
+			}
 		}catch(SQLException e) {
 			e.printStackTrace();
 			throw new DatabaseException("해당하는 상태가 없습니다.");
@@ -534,9 +545,9 @@ public class ProductDAOImpl implements ProductDAO {
 			ps = con.prepareStatement(sql);
 			ps.setInt(1, conditionId);
 			rs = ps.executeQuery();
-			
-			itemCondition = rs.getString(1);
-			
+			if(rs.next()) {
+				itemCondition = rs.getString(1);
+			}
 		}catch(SQLException e) {
 			e.printStackTrace();
 			throw new DatabaseException("해당하는 품질이 없습니다.");
@@ -545,5 +556,6 @@ public class ProductDAOImpl implements ProductDAO {
 		}
 		return itemCondition;
 	}
+
 	
 }

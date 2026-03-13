@@ -1,8 +1,8 @@
 package view;
 
 import controller.AuthController;
+import controller.ProductController;
 import dto.Product;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -112,7 +112,7 @@ public class GuestMenuView {
      * 상품 전체 목록 보기
      */
     private void viewAllProducts() {
-        List<Product> products = getSampleProducts();
+        List<Product> products = ProductController.productSelectAll();
         ProductView.printProductList(products); // 상품 목록 표 형식 출력
 
         System.out.print("\n번호입력(상세보기) (0: 뒤로가기) > ");
@@ -154,7 +154,7 @@ public class GuestMenuView {
                 return;
             }
 
-            List<Product> filteredProducts = getSampleFilterdProducts();
+            List<Product> filteredProducts = ProductController.productSelectByCategory(categoryId);
             //filteredProducts.clear(); //조회내용 없을시 테스트용
             if (filteredProducts.isEmpty()) {
                 System.out.println("\n해당 카테고리에 상품이 없습니다.");
@@ -198,7 +198,7 @@ public class GuestMenuView {
             return;
         }
 
-        List<Product> searchResults = getSampleFilterdProducts();
+        List<Product> searchResults = ProductController.productSelectByName(productName);
         //searchResults.clear(); //조회내용 없을시 테스트용
         if (searchResults.isEmpty()) {
             System.out.println("\n검색된 상품이 없습니다.");
@@ -231,7 +231,7 @@ public class GuestMenuView {
     /**
      * 샘플 상품 데이터 생성 (View 테스트용)
      */
-    private List<Product> getSampleProducts() {
+    /*private List<Product> getSampleProducts() {
         List<Product> products = new ArrayList<>();
 
         // 샘플 상품 1 - 노트북
@@ -325,12 +325,12 @@ public class GuestMenuView {
         products.add(p10);
 
         return products;
-    }
+    }*/
     
     /**
      * 샘플 상품 데이터 생성 (View 테스트용)
      */
-    private List<Product> getSampleFilterdProducts() {
+    /*private List<Product> getSampleFilterdProducts() {
         List<Product> products = new ArrayList<>();
 
         // 샘플 상품 1 - 노트북
@@ -361,5 +361,5 @@ public class GuestMenuView {
         products.add(p3);
 
         return products;
-    }
+    }*/
 }
