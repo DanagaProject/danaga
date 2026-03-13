@@ -11,7 +11,7 @@ public interface OrdersService {
     
     // 1. 주문 추가
     int ordersInsert(Orders orders) throws SQLException;
-
+    
     // 2. 사용자별 주문 조회
     List<Orders> selectOrdersByUserId(String userId) throws SQLException;
 
