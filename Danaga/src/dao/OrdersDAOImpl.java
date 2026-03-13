@@ -14,52 +14,80 @@ import util.DBUtil;
 
 public class OrdersDAOImpl implements OrdersDAO {
 
-    @Override
-    public int ordersInsert(Orders orders) throws SQLException {
-        Connection con = null;
-        int result = 0;
+	@Override
+	public int ordersInsert(Orders order) throws SQLException {
+	    Connection con = null;
+	    PreparedStatement ps = null;
+	    ResultSet rs = null;
+	    
+	    
+	   
+	    String sql = "INSERT INTO orders (product_id, buyer_id, status_id) VALUES (?, ?, 4)";
+	    
+	    int price = 0;
+	    int balance = 0;
+	    
+	    int result = 0;
 
-        try {
-            // 1. Connection 생성 및 트랜잭션 시작
-            con = DBUtil.getConnection();
-            con.setAutoCommit(false); 
+	    try {
+	        con = DBUtil.getConnection();
+	        con.setAutoCommit(false);
 
-            // 2. 내부 private 메소드들을 호출하여 비즈니스 로직 수행 (동일한 con 공유)
-            int price = selectProductPrice(con, orders.getProductId());
-            
-            int balance = selectUserBalance(con, orders.getBuyerId());
-            if (balance < price) {
-                throw new SQLException("잔액이 부족합니다. (현재 잔액: " + balance + "원)");
-            }
+	        
+	        price = this.selectProductPrice(con, order.getProductId());
+	        balance = this.selectUserBalance(con, order.getBuyerId());
 
-            updateUserBalance(con, orders.getBuyerId(), -price);
-            
-            result = insertordersTable(con, orders); // 생성된 orders_id를 반환받을 수도 있음
-            
-            updateProductStatus(con, orders.getProductId(), 11);
-            
-            //insertNotification(con, orders.getBuyerId(), "상품 구매 신청이 완료되었습니다.");
+	        if (balance < price) {
+	            throw new SQLException("잔액이 부족합니다. (현재 잔액: " + balance + "원)");
+	        }
 
-            // 3. 모든 작업 성공 시 커밋
-            con.commit();
+	        
+	        this.updateUserBalance(con, order.getBuyerId(), -price);
+	        this.updateUserBalance(con, "admin", price);
+	       
+	        ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+	        ps.setInt(1, order.getProductId());
+	        ps.setString(2, order.getBuyerId());
 
-        } catch (SQLException e) {
-            // 실패 시 롤백
-            if (con != null) {
-                try { 
-                	con.rollback(); 
-                	} catch (SQLException ex) {
-                		ex.printStackTrace(); 
-                	}
-            }
-            throw e;
-        } finally {
-            // 자원 해제
-            DBUtil.close(con, null, null);
-        }
+	        result = ps.executeUpdate();
 
-        return result;
-    }
+	        if (result == 0) {
+	            con.rollback();
+	            throw new SQLException("주문 등록에 실패했습니다.");
+	        } else {
+	            
+	            rs = ps.getGeneratedKeys();
+	            int orderId = -1;
+	            if (rs.next()) {
+	                orderId = rs.getInt(1);
+	            }
+	            System.out.println("생성된 orderId = " + orderId);
+
+	            
+	            this.updateProductStatus(con, order.getProductId(), 11);
+
+	            
+	            this.insertNotification(con, order.getBuyerId(), "상품 구매 신청이 완료되었습니다.");
+
+	            con.commit(); 
+	        }
+
+	    } catch (SQLException e) {
+	        if (con != null) {
+	            try {
+	                con.rollback();
+	            } catch (SQLException ex) {
+	                ex.printStackTrace();
+	            }
+	        }
+	        throw e;
+	    } finally {
+	        // 자원 해제
+	        DBUtil.close(con, ps, rs);
+	    }
+
+	    return result;
+	}
 
    
 
@@ -88,14 +116,157 @@ public class OrdersDAOImpl implements OrdersDAO {
                 
                 list.add(orders);
             }
-        } finally {
+        } catch (SQLException e) {
+			// TODO: handle exception
+        	e.printStackTrace();
+		} finally {
             DBUtil.close(con, ps, rs);
         }
         return list;
     }
+	@Override
+	public Orders selectOrderById(int orderId) throws SQLException {
+	    Connection con = null;
+	    PreparedStatement ps = null;
+	    ResultSet rs = null;
+	    Orders order = null;
+
+	    try {
+	        con = DBUtil.getConnection();
+	        // 정산(구매확정)에 필요한 price와 seller_id를 가져오기 위해 JOIN 사용
+	        String sql = "SELECT o.orders_id, o.product_id, o.buyer_id, o.status_id, " +
+	                     "p.price, p.seller_id " +
+	                     "FROM orders o " +
+	                     "JOIN product p ON o.product_id = p.product_id " +
+	                     "WHERE o.orders_id = ?";
+	                     
+	        ps = con.prepareStatement(sql);
+	        ps.setInt(1, orderId);
+	        rs = ps.executeQuery();
+	        
+	        if (rs.next()) {
+	            order = new Orders();
+	            order.setOrdersId(rs.getInt("orders_id"));
+	            order.setProductId(rs.getInt("product_id"));
+	            order.setBuyerId(rs.getString("buyer_id"));
+	            order.setStatusId(rs.getInt("status_id"));
+	            
+	            // 💡 주의: DTO에 이 두 필드가 있어야 합니다!
+	            order.setProductPrice(rs.getInt("price")); 
+	            order.setSellerId(rs.getString("seller_id"));
+	        }
+	    } finally {
+	        DBUtil.close(con, ps, rs);
+	    }
+	    
+	    return order;
+	}
+	
+	public int startDelivery(int orderId) throws SQLException {
+	    Connection con = null;
+	    int result = 0;
+	    try {
+	        con = DBUtil.getConnection();
+	        con.setAutoCommit(false);
+
+	        // 1. 상태 변경 (도우미 메서드 활용 - 배송중 상태코드 전달)
+	        result = this.updateOrdersStatus(con, orderId, 5); // 5: 배송중 예시
+	        
+	        // 2. 구매자에게 알림
+	        String buyerId = this.selectBuyerIdByOrderId(con, orderId);
+	        String message = "주문번호 [" + orderId + "]번 배송이 시작되었습니다!";
+	        this.insertNotification(con, buyerId, message);
+
+	        con.commit();
+	    } catch (SQLException e) {
+	        if (con != null) con.rollback();
+	        throw e;
+	    } finally {
+	        DBUtil.close(con, null, null);
+	    }
+	    return result;
+	}
+	
+	
+	public int cancleRequest(int orderId) throws SQLException {
+	    Connection con = null;
+	    int result = 0;
+	    try {
+	        con = DBUtil.getConnection();
+	        con.setAutoCommit(false);
+	        
+	        // 1. 판매자 ID 조회
+	        String sellerId = this.selectSellerIdByOrderId(con, orderId);
+	        if(sellerId == null) throw new SQLException("판매자 정보를 찾을 수 없습니다");
+	        
+	        // 2. 상태 변경 (도우미 메서드 호출 - con 전달!)
+	        result = this.updateOrdersStatus(con, orderId, 6); // 6: 취소요청
+	        
+	        if(result == 0) throw new SQLException("주문상태 변경 실패");
+	        
+	        // 3. 알림 전송
+	        String message = "주문 번호 [" + orderId + "]에 대한 주문 취소 요청이 들어왔습니다.";  
+	        this.insertNotification(con, sellerId, message);
+	        
+	        con.commit();
+	    } catch (SQLException e) {
+	        if (con != null) con.rollback();
+	        throw e;
+	    } finally {
+	        DBUtil.close(con, null, null);
+	    }
+	    return result;
+	}
+	
+	
+	public int confirmTrade(Orders orders) throws SQLException {
+		Connection con = null;
+	    PreparedStatement ps = null;
+	    int result = 0;
+
+	    try {
+	        con = DBUtil.getConnection();
+	        con.setAutoCommit(false); // 트랜잭션 시작
+	        
+	        
+	        
+	        // 1. 주문 상태를 'CONFIRMED'로 변경 (order_id 사용)
+	        result = this.updateOrdersStatus(con, orders.getOrdersId(), 9);
+	       
+	        
+
+	        if (result == 0) {
+	            throw new SQLException("주문 상태 변경 실패: 해당 주문이 존재하지 않습니다.");
+	        }
+
+	        // 2. 판매자 정산 (admin -> seller)
+	       
+	        this.updateUserBalance(con, orders.getSellerId(), orders.getProductPrice());
+	        this.updateUserBalance(con, "admin", -orders.getProductPrice());
+
+	        // 3. 상품 상태 변경
+	        
+	        this.updateProductStatus(con, orders.getProductId(), 12);
+
+	        // 4. 판매자 알림 전송
+	        this.insertNotification(con, orders.getSellerId(), 
+	            "주문번호 [" + orders.getOrdersId() + "]의 정산이 완료되었습니다.");
+
+	        con.commit(); // 최종 성공
+
+	    } catch (SQLException e) {
+	        if (con != null) try { con.rollback(); } catch (SQLException ex) {}
+	        throw e;
+	    } finally {
+	        DBUtil.close(con, null, null);
+	    }
+	    return result;
+	}
+	
+	
 ////////////////////////////////////////////////////////////////////////////////////
-	private void updateUserBalance(Connection con, String userId, int amount) throws SQLException {
-	    // amount가 음수면 차감, 양수면 증액이 되므로 쿼리는 하나로 충분합니다.
+	public void updateUserBalance(Connection con, String userId, int amount) throws SQLException {
+
 	    String sql = "UPDATE user SET balance = balance + ? WHERE user_id = ?";
 	    
 	    try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -104,14 +275,14 @@ public class OrdersDAOImpl implements OrdersDAO {
 	        
 	        int result = ps.executeUpdate();
 	        
-	        // 중요: UserDAOImpl처럼 업데이트된 행이 없는 경우 예외 처리
+	        
 	        if (result == 0) {
 	            throw new SQLException("잔액 수정 실패: 사용자를 찾을 수 없습니다.");
 	        }
 	    }
 	}
 	
-    public int selectProductPrice(Connection con, int productId) throws SQLException {
+    private int selectProductPrice(Connection con, int productId) throws SQLException {
         String sql = "SELECT price, status_id FROM product WHERE product_id = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productId);
@@ -127,7 +298,7 @@ public class OrdersDAOImpl implements OrdersDAO {
         }
     }
 
-    public int selectUserBalance(Connection con, String userId) throws SQLException {
+    private int selectUserBalance(Connection con, String userId) throws SQLException {
         String sql = "SELECT balance FROM user WHERE user_id = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, userId);
@@ -140,36 +311,65 @@ public class OrdersDAOImpl implements OrdersDAO {
 
     
 
-    public int insertordersTable(Connection con, Orders orders) throws SQLException {
-        String sql = "INSERT INTO orders (product_id, buyer_id, status_id) VALUES (?, ?, 4)";
-        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, orders.getProductId());
-            ps.setString(2, orders.getBuyerId());
-            
-            if (ps.executeUpdate() == 0) throw new SQLException("주문 등록에 실패했습니다.");
-            
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) return rs.getInt(1);
-            }
-            return -1;
-        }
-    }
+    
 
-    public void updateProductStatus(Connection con, int productId, int status_id) throws SQLException {
+    private void updateProductStatus(Connection con, int productId, int statusId) throws SQLException {
         String sql = "UPDATE product SET status_id = ? WHERE product_id = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, status_id);
+            ps.setInt(1, statusId);
             ps.setInt(2, productId);
             ps.executeUpdate();
         }
     }
 
-    public void insertNotification(Connection con, String userId, String message) throws SQLException {
+    private void insertNotification(Connection con, String userId, String message) throws SQLException {
         String sql = "INSERT INTO notification (user_id, message) VALUES (?, ?)";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, userId);
             ps.setString(2, message);
             ps.executeUpdate();
         }
+    }   
+    
+    private String selectSellerIdByOrderId(Connection con, int orderId) throws SQLException {
+    	String sql = "SELECT p.seller_id FROM orders o JOIN product p ON o.product_id = p.product_id WHERE o.orders_id = ?";
+    				 
+    	try (PreparedStatement ps = con.prepareStatement(sql)) {
+    		ps.setInt(1, orderId);
+    		try (ResultSet rs = ps.executeQuery()) {
+    	            if (rs.next()) {
+    	            	return rs.getString("seller_id");   
+    	            }
+    		}
+    		
+    	}
+    	return null;
+    		
     }
+    private int updateOrdersStatus(Connection con, int orderId, int newStatusId) throws SQLException {
+        String sql = "UPDATE orders SET status_id = ? WHERE orders_id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, newStatusId);
+            ps.setInt(2, orderId);
+            return ps.executeUpdate();
+        }
+    }
+    private String selectBuyerIdByOrderId(Connection con, int orderId) throws SQLException {
+    	String sql = "SELECT buyer_id FROM orders WHERE orders_id = ?";
+    				 
+    	try (PreparedStatement ps = con.prepareStatement(sql)) {
+    		ps.setInt(1, orderId);
+    		try (ResultSet rs = ps.executeQuery()) {
+    	            if (rs.next()) {
+    	            	return rs.getString("buyer_id");   
+    	            }
+    		}
+    		
+    	}
+    	return null;
+    		
+    }
+    
+    
+    
 }

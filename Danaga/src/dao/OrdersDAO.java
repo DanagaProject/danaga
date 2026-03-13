@@ -14,6 +14,25 @@ public interface OrdersDAO {
     /**
      * 주문 내역 조회
      */
-
 	List<Orders> selectordersByUserId(String userId) throws SQLException;
+	
+	/**
+     * 특정 주문 번호로 1건 상세 조회 (정산 정보 포함)
+     */
+	Orders selectOrderById(int orderId) throws SQLException;
+	
+	/**
+	 * 배송 완료
+	 */
+	int startDelivery(int orderId) throws SQLException;
+	
+	/**
+	 * 취소요청
+	 */
+	int cancleRequest(int orderId) throws SQLException;
+	/**
+	 * 거래 완료
+	 */
+	int confirmTrade(Orders orders) throws SQLException;
+	
 }
