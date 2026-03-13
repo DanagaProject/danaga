@@ -10,7 +10,6 @@ import java.util.List;
 import dto.Category;
 import dto.FavoriteCategory;
 import dto.Product;
-import dto.User;
 import exception.CategoryNotFoundException;
 import exception.DatabaseException;
 import exception.ProductNotFoundException;
@@ -18,7 +17,13 @@ import util.DBUtil;
 
 public class ProductDAOImpl implements ProductDAO {
 	
-	ProductDAO productDAO = new ProductDAOImpl();
+	private static ProductDAO instance = new ProductDAOImpl();
+	
+	private ProductDAOImpl() {}
+	
+	public static ProductDAO getInstance() {
+		return instance;
+	}
 
 	@Override
 	public List<Product> productSelectAll() throws ProductNotFoundException, DatabaseException {
@@ -377,27 +382,28 @@ public class ProductDAOImpl implements ProductDAO {
 		return result;
 	}
 	
-	// currentUser 활용해서 뽑아오기
 	@Override
-	public List<FavoriteCategory> favCategorySeletAllByUser() throws CategoryNotFoundException, DatabaseException {
+	public List<FavoriteCategory> favCategorySeletAllByUser(String currentUserId) throws CategoryNotFoundException, DatabaseException {
 		Connection con=null;
 		PreparedStatement ps=null;
 		ResultSet rs = null;
 		FavoriteCategory favoriteCategory = null;
 		
 		List<FavoriteCategory> list = new ArrayList<>();
-		String sql = "select * from favorite_category where user_id = ? group by user_id order by user_id, category_id";
+		String sql = "select * from favorite_category where user_id = ? order by category_id";
 		
 		try {
 			con = DBUtil.getConnection();
 			ps = con.prepareStatement(sql);
+			
+			ps.setString(1, currentUserId);
+			
 			rs = ps.executeQuery();
 			
 			while(rs.next()) {				
-				String userId = rs.getString(2);
 				int categoryId = rs.getInt(3);
 				
-				favoriteCategory = new FavoriteCategory(userId, categoryId);
+				favoriteCategory = new FavoriteCategory(currentUserId, categoryId);
 				
 				//이름 가져오기
 				String categoryName = this.categoryNameSelect(con, categoryId);
@@ -407,7 +413,7 @@ public class ProductDAOImpl implements ProductDAO {
 			}
 		}catch(SQLException e) {
 			e.printStackTrace();
-			throw new CategoryNotFoundException("해당하는 카테고리가 없습니다.");
+			throw new CategoryNotFoundException("선호 카테고리가 없습니다.");
 		}finally {
 			DBUtil.close(con,ps,rs);
 		}
@@ -416,21 +422,53 @@ public class ProductDAOImpl implements ProductDAO {
 	}
 
 	@Override
-	public int favCategoryInsert(User currentUser) throws CategoryNotFoundException {
+	public int favCategoryInsert(String currentUserId, int categoryId) throws CategoryNotFoundException {
 		Connection con=null;
 		PreparedStatement ps=null;
-		String sql = "";
-
-		return 0;
+		String sql = "insert into favorite_category(user_id, category_id) values (?, ?)";
+		int result = 0;
+		
+		try {
+			con = DBUtil.getConnection();
+			ps = con.prepareStatement(sql);
+			
+			ps.setString(1, currentUserId);
+			ps.setInt(2, categoryId);
+			
+			result = ps.executeUpdate();
+			
+		}catch(SQLException e) {
+			e.printStackTrace();
+			throw new CategoryNotFoundException("선호 카테고리를 추가할 수 없습니다.");
+		}finally {
+			DBUtil.close(con, ps);
+		}
+		
+		return result;
 	}
 
 	@Override
-	public int favCategoryDelete(User currentUser) throws CategoryNotFoundException {
+	public int favCategoryDelete(String currentUserId) throws CategoryNotFoundException {
 		Connection con=null;
 		PreparedStatement ps=null;
-		String sql = "";
-
-		return 0;
+		String sql = "delete from favorite_category where user_id = ?";
+		int result = 0;		
+		
+		try {
+			con = DBUtil.getConnection();
+			ps = con.prepareStatement(sql);
+			
+			ps.setString(1, currentUserId);
+			
+			result = ps.executeUpdate();
+		}catch(SQLException e) {
+			e.printStackTrace();
+			throw new CategoryNotFoundException("선호 카테고리를 삭제할 수 없습니다.");
+		}finally {
+			DBUtil.close(con, ps);
+		}
+		
+		return result;
 	}
 	
 	/**
