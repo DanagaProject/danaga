@@ -1,8 +1,5 @@
 package view;
 
-import dto.Category;
-import dto.Code;
-import dto.Comment;
 import dto.Product;
 import java.util.List;
 import java.util.Scanner;
@@ -70,24 +67,6 @@ public class ProductView {
         System.out.println("  설명        :");
         System.out.println("  " + (product.getDescription() != null ? product.getDescription() : "설명 없음"));
         System.out.println("════════════════════════════════════════════════════════════════════════════════");
-
-        // 댓글 출력 기능
-        System.out.println("\n[ 댓글 ]");
-        controller.CommentController commentController = new controller.CommentController();
-        List<Comment> comments = commentController.getCommentsByProductId(product.getProductId());
-        
-        if (comments.isEmpty()) {
-            System.out.println("  등록된 댓글이 없습니다.");
-        } else {
-            for (Comment c : comments) {
-                String createdAt = c.getCreatedAt();
-                if (createdAt != null && createdAt.length() > 19) {
-                    createdAt = createdAt.substring(0, 19);
-                }
-                System.out.println("  ▶ " + c.getUserId() + " : " + c.getContent() + " [" + createdAt + "]");
-            }
-        }
-        System.out.println("════════════════════════════════════════════════════════════════════════════════");
     }
 
     /**
@@ -95,13 +74,13 @@ public class ProductView {
      *
      * @param categories 카테고리 목록
      */
-    public static void printCategoryList(List<Category> categories) {
+    public static void printCategoryList(List<dto.Category> categories) {
         System.out.println("\n════════════════════════════════════════════════════════════════");
         System.out.println("                        카테고리 선택                           ");
         System.out.println("════════════════════════════════════════════════════════════════");
 
         if (categories != null && !categories.isEmpty()) {
-            for (Category category : categories) {
+            for (dto.Category category : categories) {
                 System.out.println("  " + category.getCategoryId() + ". " + category.getName());
             }
         } else {
@@ -111,30 +90,6 @@ public class ProductView {
         System.out.println("  0. 뒤로가기");
         System.out.println("════════════════════════════════════════════════════════════════");
         System.out.print("  카테고리 선택 > ");
-    }
-
-    /**
-     * 상품 상태 목록 출력 (code 테이블에서 조회된 item_condition 그룹)
-     * - 상품 등록/수정 시 상태 선택 화면
-     *
-     * @param conditions 상태 코드 목록 (CodeController에서 조회)
-     */
-    public static void printConditionList(List<Code> conditions) {
-        System.out.println("\n════════════════════════════════════════════════════════════════");
-        System.out.println("                        상태 선택                               ");
-        System.out.println("════════════════════════════════════════════════════════════════");
-
-        if (conditions != null && !conditions.isEmpty()) {
-            for (Code code : conditions) {
-                System.out.println("  " + code.getCodeId() + ". " + code.getName());
-            }
-        } else {
-            System.out.println("  조회된 상태 정보가 없습니다.");
-        }
-
-        System.out.println("  0. 취소");
-        System.out.println("════════════════════════════════════════════════════════════════");
-        System.out.print("  상태 선택 > ");
     }
 
     // ============================================================================
