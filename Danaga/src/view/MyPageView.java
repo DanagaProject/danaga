@@ -1,8 +1,12 @@
 package view;
 
+import controller.CodeController;
 import dto.Category;
+import dto.Code;
+import dto.Notification;
 import dto.Orders;
 import dto.Product;
+import service.CodeService;
 import util.SessionManager;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +17,11 @@ import java.util.Scanner;
  */
 public class MyPageView {
     private Scanner sc;
+    private final CodeController codeController;
 
     public MyPageView(Scanner sc) {
         this.sc = sc;
+        this.codeController = new CodeController();
     }
 
     /**
@@ -27,8 +33,8 @@ public class MyPageView {
             System.out.println("  👤  마이페이지");
             System.out.println("════════════════════════════════════════");
             System.out.println("  사용자: " + SessionManager.getCurrentUserId() + " 님");
-            System.out.println("  💰  잔액:  " +BalanceView.formatBalance(SessionManager.getCurrentUser().getBalance())  
-            								+ "  |  🔔  새 알림 표시 예정");
+            System.out.println("  💰  잔액:  " + BalanceView.formatBalance(SessionManager.getCurrentUser().getBalance())
+                    + "  |  🔔  알림");
             System.out.println("════════════════════════════════════════");
             System.out.println("  [구매]");
             System.out.println("  1.  내 구매 현황");
@@ -466,7 +472,7 @@ public class MyPageView {
         // 샘플 상품 1 - 판매중
         Product p1 = new Product(11, currentUserId, 1, "맥북 프로 16인치 M2", 2800000,
                 "2023년 구입한 맥북 프로입니다. 상태 매우 좋습니다.",
-                1, 10, "2024-03-01");
+                1, 10, "2024-03-01", "N");
         p1.setCategoryName("노트북");
         p1.setItemCondition("상");
         p1.setStatus("ON_SALE");
@@ -475,7 +481,7 @@ public class MyPageView {
         // 샘플 상품 2 - 예약됨
         Product p2 = new Product(12, currentUserId, 4, "해피해킹 키보드 HHKB", 300000,
                 "해피해킹 키보드 판매합니다. 깨끗하게 사용했습니다.",
-                1, 11, "2024-02-28");
+                1, 11, "2024-02-28", "N");
         p2.setCategoryName("키보드");
         p2.setItemCondition("상");
         p2.setStatus("RESERVED");
@@ -484,7 +490,7 @@ public class MyPageView {
         // 샘플 상품 3 - 판매완료
         Product p3 = new Product(13, currentUserId, 5, "로지텍 G502 마우스", 60000,
                 "로지텍 게이밍 마우스. 1년 사용.",
-                2, 9, "2024-02-20");
+                2, 9, "2024-02-20", "N");
         p3.setCategoryName("마우스");
         p3.setItemCondition("중");
         p3.setStatus("COMPLETED");
@@ -564,7 +570,7 @@ public class MyPageView {
             // 판매중인 상품
             Product p1 = new Product(201, currentUserId, 7, "RTX 4080", 500000,
                     "RTX 4080 GPU 판매합니다.",
-                    1, 10, "2024-03-10");
+                    1, 10, "2024-03-10", "N");
             p1.setCategoryName("GPU");
             p1.setItemCondition("상");
             p1.setStatus("ON_SALE");
@@ -572,7 +578,7 @@ public class MyPageView {
 
             Product p2 = new Product(202, currentUserId, 4, "HHKB", 200000,
                     "해피해킹 키보드입니다.",
-                    1, 10, "2024-03-08");
+                    1, 10, "2024-03-08", "N");
             p2.setCategoryName("키보드");
             p2.setItemCondition("상");
             p2.setStatus("ON_SALE");
@@ -582,7 +588,7 @@ public class MyPageView {
             // 거래중인 상품
             Product p3 = new Product(203, currentUserId, 6, "i9-13900K", 650000,
                     "인텔 i9-13900K CPU",
-                    1, 10, "2024-03-05");
+                    1, 10, "2024-03-05", "N");
             p3.setCategoryName("CPU");
             p3.setItemCondition("상");
             p3.setStatus("RESERVED");
@@ -592,7 +598,7 @@ public class MyPageView {
             // 최근 완료
             Product p5 = new Product(205, currentUserId, 7, "GTX 1080", 280000,
                     "GTX 1080 GPU",
-                    2, 9, "2024-01-10");
+                    2, 9, "2024-01-10", "N");
             p5.setCategoryName("GPU");
             p5.setItemCondition("중");
             p5.setStatus("COMPLETED");
@@ -777,26 +783,28 @@ public class MyPageView {
 
     /**
      * 상태 수정
+     * - code 테이블에서 item_condition 그룹 조회 후 동적으로 목록 표시
      */
     private void updateProductCondition(Product product) {
-        System.out.println("상태 선택: 1.상 2.중 3.하");
-        System.out.print("선택 > ");
+        List<Code> conditions = codeController.getCodesByGroup("item_condition");
+        ProductView.printConditionList(conditions);
         String condChoice = sc.nextLine().trim();
-        switch (condChoice) {
-            case "1":
-                product.setItemCondition("상");
-                System.out.println("상태가 변경되었습니다.");
-                break;
-            case "2":
-                product.setItemCondition("중");
-                System.out.println("상태가 변경되었습니다.");
-                break;
-            case "3":
-                product.setItemCondition("하");
-                System.out.println("상태가 변경되었습니다.");
-                break;
-            default:
-                System.out.println("잘못된 입력입니다.");
+        if ("0".equals(condChoice)) {
+            return;
+        }
+        try {
+            int codeId = Integer.parseInt(condChoice);
+            for (Code code : conditions) {
+                if (code.getCodeId() == codeId) {
+                    product.setConditionId(code.getCodeId());
+                    product.setItemCondition(code.getName());
+                    System.out.println("상태가 변경되었습니다.");
+                    return;
+                }
+            }
+            System.out.println("잘못된 입력입니다.");
+        } catch (NumberFormatException e) {
+            CommonView.printInvalidNumberMessage();
         }
     }
 
@@ -874,7 +882,8 @@ public class MyPageView {
             original.getDescription(),
             original.getConditionId(),
             original.getStatusId(),
-            original.getCreatedAt()
+            original.getCreatedAt(),
+            original.getIsDeleted()
         );
         copy.setCategoryName(original.getCategoryName());
         copy.setItemCondition(original.getItemCondition());
@@ -994,7 +1003,7 @@ public class MyPageView {
         // 추가 샘플 - 완료된 상품 더 추가
         Product p6 = new Product(206, currentUserId, 8, "삼성 DDR4 16GB", 90000,
                 "삼성 DDR4 16GB 메모리",
-                2, 9, "2024-02-15");
+                2, 9, "2024-02-15", "N");
         p6.setCategoryName("RAM");
         p6.setItemCondition("중");
         p6.setStatus("COMPLETED");
@@ -1002,7 +1011,7 @@ public class MyPageView {
 
         Product p7 = new Product(207, currentUserId, 3, "LG 24인치 모니터", 150000,
                 "LG 24인치 모니터 판매",
-                2, 8, "2024-01-20");
+                2, 8, "2024-01-20", "N");
         p7.setCategoryName("모니터");
         p7.setItemCondition("중");
         p7.setStatus("COMPLETED");
@@ -1045,8 +1054,9 @@ public class MyPageView {
         if (price == null) return null;
 
         // 3. 상태 입력
-        Integer conditionId = inputProductConditionId();
-        if (conditionId == null) return null;
+        List<Code> conditions = codeController.getCodesByGroup("item_condition");
+        Code selectedCondition = inputProductCondition(conditions);
+        if (selectedCondition == null) return null;
 
         // 4. 카테고리 입력
         // 카테고리 목록 조회 (추후 DAO에서 조회)
@@ -1061,14 +1071,13 @@ public class MyPageView {
 
         // Product 객체 생성
         String currentUserId = SessionManager.getCurrentUserId();
-        Product product = new Product(currentUserId, category.getCategoryId(), title, price, description, conditionId);
+        Product product = new Product(currentUserId, category.getCategoryId(), title, price, description, selectedCondition.getCodeId());
 
         // 카테고리명 설정
         product.setCategoryName(category.getName());
 
-        // 상태명 설정
-        String[] conditions = {"상", "중", "하"};
-        product.setItemCondition(conditions[conditionId - 1]);
+        // 상태명 설정 (code 테이블에서 조회한 name 사용)
+        product.setItemCondition(selectedCondition.getName());
 
         return product;
     }
@@ -1115,25 +1124,31 @@ public class MyPageView {
 
     /**
      * 상태 입력
+     * - code 테이블에서 조회된 item_condition 목록을 동적으로 표시
+     * - 사용자가 code_id를 입력하면 해당 Code 객체 반환 (취소 시 null)
+     *
+     * @param conditions code 테이블에서 조회된 상태 목록
+     * @return 선택된 Code 객체, 취소 시 null
      */
-    private Integer inputProductConditionId() {
+    private Code inputProductCondition(List<Code> conditions) {
         System.out.println("\n[3/5] 상태 선택");
-        System.out.println("1.상  2.중  3.하  0.취소");
-        System.out.print("선택 > ");
+        ProductView.printConditionList(conditions);
         String condInput = sc.nextLine().trim();
         if ("0".equals(condInput)) {
             return null;
         }
-        switch (condInput) {
-            case "1":
-                return 1;
-            case "2":
-                return 2;
-            case "3":
-                return 3;
-            default:
-                System.out.println("잘못된 입력입니다.");
-                return inputProductConditionId(); // 재귀 호출
+        try {
+            int codeId = Integer.parseInt(condInput);
+            for (Code code : conditions) {
+                if (code.getCodeId() == codeId) {
+                    return code;
+                }
+            }
+            System.out.println("잘못된 입력입니다.");
+            return inputProductCondition(conditions); // 재귀 호출
+        } catch (NumberFormatException e) {
+            CommonView.printInvalidNumberMessage();
+            return inputProductCondition(conditions); // 재귀 호출
         }
     }
 
@@ -1203,9 +1218,13 @@ public class MyPageView {
     /**
      * 즐겨찾기 카테고리 관리
      */
+    /**
+     * 즐겨찾기 카테고리 관리
+     */
     private void manageFavorites() {
         while (true) {
-            // 즐겨찾기 목록 조회 (추후 DAO에서 조회)
+            // TODO: Controller 연동 - 즐겨찾기 목록 조회
+            // List<Category> favoriteCategories = favoriteController.getFavoriteCategories(SessionManager.getCurrentUserId());
             List<Category> favoriteCategories = getSampleFavoriteCategories();
 
             FavoriteView.printFavoriteManagement(favoriteCategories);
@@ -1213,10 +1232,10 @@ public class MyPageView {
 
             switch (menu) {
                 case "1":
-                    addFavoriteCategory(favoriteCategories);
+                    addFavoriteCategory();
                     break;
                 case "2":
-                    removeFavoriteCategory(favoriteCategories);
+                    removeFavoriteCategory();
                     break;
                 case "0":
                     return;
@@ -1229,13 +1248,13 @@ public class MyPageView {
     /**
      * 즐겨찾기 추가
      */
-    private void addFavoriteCategory(List<Category> currentFavorites) {
+    private void addFavoriteCategory() {
         FavoriteView.printAddFavoriteHeader();
 
-        // 전체 카테고리 목록 조회
+        // TODO: Controller 연동 - 전체 카테고리 조회
+        // List<Category> allCategories = categoryController.getAllCategories();
         List<Category> allCategories = getSampleCategories();
 
-        // 카테고리 선택
         ProductView.printCategoryList(allCategories);
         String input = sc.nextLine().trim();
 
@@ -1252,14 +1271,9 @@ public class MyPageView {
                 return;
             }
 
-            // 이미 즐겨찾기에 있는지 확인
-            if (isInFavorites(currentFavorites, categoryId)) {
-                FavoriteView.printAlreadyInFavorite();
-                return;
-            }
+            // TODO: Controller 연동 - 즐겨찾기 추가 (중복 확인 포함)
+            // favoriteController.addFavorite(SessionManager.getCurrentUserId(), categoryId);
 
-            // 즐겨찾기 추가 처리
-            System.out.println("\n[TODO] 즐겨찾기 추가 처리 - Controller/Service 연동 예정");
             FavoriteView.printAddFavoriteSuccess(selectedCategory);
 
         } catch (NumberFormatException e) {
@@ -1270,87 +1284,51 @@ public class MyPageView {
     /**
      * 즐겨찾기 삭제
      */
-    private void removeFavoriteCategory(List<Category> favoriteCategories) {
-        if (favoriteCategories == null || favoriteCategories.isEmpty()) {
-            FavoriteView.printNoFavoritesToRemove();
-            return;
-        }
-
+    private void removeFavoriteCategory() {
         while (true) {
-            FavoriteView.printRemoveFavoriteHeader();
+            // TODO: Controller 연동 - 즐겨찾기 목록 조회
+            // List<Category> favorites = favoriteController.getFavoriteCategories(SessionManager.getCurrentUserId());
+            List<Category> favorites = getSampleFavoriteCategories();
 
-            // 즐겨찾기 목록 표시
-            for (int i = 0; i < favoriteCategories.size(); i++) {
-                Category category = favoriteCategories.get(i);
-                System.out.println("[" + (i + 1) + "]  " + category.getName());
-            }
-
-            System.out.println();
-            System.out.print("번호 (0: 취소) > ");
+            FavoriteView.printRemoveFavoriteList(favorites);
             String input = sc.nextLine().trim();
 
             if ("0".equals(input)) {
                 return;
             }
 
-            try {
-                int index = Integer.parseInt(input) - 1;
+            if (favorites == null || favorites.isEmpty()) {
+                return;
+            }
 
-                if (index < 0 || index >= favoriteCategories.size()) {
+            try {
+                int categoryId = Integer.parseInt(input);
+                Category selectedCategory = findCategoryById(favorites, categoryId);
+
+                if (selectedCategory == null) {
                     System.out.println("잘못된 번호입니다.");
-                    continue; // 다시 입력받기
+                    continue;
                 }
 
-                Category selectedCategory = favoriteCategories.get(index);
+                FavoriteView.printRemoveFavoriteConfirm(selectedCategory);
+                String confirm = sc.nextLine().trim();
 
-                // 삭제 확인
-                if (confirmRemoveFavorite(selectedCategory)) {
-                    System.out.println("\n[TODO] 즐겨찾기 삭제 처리 - Controller/Service 연동 예정");
-                    CommonView.printSuccessMessage("즐겨찾기 삭제 완료");
+                if ("1".equals(confirm)) {
+                    // TODO: Controller 연동 - 즐겨찾기 삭제
+                    // favoriteController.removeFavorite(SessionManager.getCurrentUserId(), categoryId);
+                    FavoriteView.printRemoveFavoriteSuccess(selectedCategory);
                     return;
-                } else {
+                } else if ("0".equals(confirm)) {
                     System.out.println("\n삭제를 취소했습니다.");
                     return;
+                } else {
+                    CommonView.printInvalidInputMessage();
                 }
 
             } catch (NumberFormatException e) {
                 CommonView.printInvalidNumberMessage();
-                // 계속 반복
             }
         }
-    }
-
-    /**
-     * 즐겨찾기 삭제 확인
-     */
-    private boolean confirmRemoveFavorite(Category category) {
-        while (true) {
-            FavoriteView.printRemoveFavoriteConfirm(category);
-            String confirm = sc.nextLine().trim();
-
-            if ("1".equals(confirm)) {
-                return true;
-            } else if ("0".equals(confirm)) {
-                return false;
-            } else {
-                CommonView.printInvalidInputMessage();
-            }
-        }
-    }
-
-    /**
-     * 카테고리가 즐겨찾기에 있는지 확인
-     */
-    private boolean isInFavorites(List<Category> favorites, int categoryId) {
-        if (favorites == null) {
-            return false;
-        }
-        for (Category category : favorites) {
-            if (category.getCategoryId() == categoryId) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -1364,8 +1342,85 @@ public class MyPageView {
         return favorites;
     }
 
+    /**
+     * 알림 확인 (전체 목록)
+     */
     private void viewNotifications() {
-        System.out.println("[TODO] 알림 확인 기능 구현 예정");
+        while (true) {
+            // TODO: Controller 연동 - 전체 알림 조회
+            // List<Notification> list = notificationController.getNotifications(SessionManager.getCurrentUserId());
+            List<Notification> list = getSampleNotifications();
+
+            NotificationView.printNotificationList(list);
+            String input = sc.nextLine().trim();
+
+            switch (input) {
+                case "1":
+                    viewUnreadNotifications();
+                    break;
+                case "0":
+                    return;
+                default:
+                    System.out.println("잘못된 입력입니다.");
+            }
+        }
+    }
+
+    /**
+     * 안읽은 알림 보기 및 읽음 처리
+     */
+    private void viewUnreadNotifications() {
+        while (true) {
+            // TODO: Controller 연동 - 안읽은 알림 조회
+            // List<Notification> unreadList = notificationController.getUnreadNotifications(SessionManager.getCurrentUserId());
+            List<Notification> unreadList = getSampleUnreadNotifications();
+
+            NotificationView.printUnreadNotificationList(unreadList);
+            String input = sc.nextLine().trim();
+
+            if ("0".equals(input)) {
+                return;
+            }
+
+            try {
+                int notificationId = Integer.parseInt(input);
+
+                // TODO: Controller 연동 - 읽음 처리
+                // notificationController.markAsRead(notificationId);
+
+                CommonView.printSuccessMessage("알림을 읽음 처리했습니다.");
+            } catch (NumberFormatException e) {
+                System.out.println("숫자를 입력해주세요.");
+            }
+        }
+    }
+
+    /**
+     * 샘플 전체 알림 데이터 (View 테스트용)
+     * 추후 Controller/Service를 통해 실제 데이터로 대체
+     */
+    private List<Notification> getSampleNotifications() {
+        List<Notification> list = new ArrayList<>();
+        list.add(new Notification(1, SessionManager.getCurrentUserId(),
+                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", false, "2024-03-10"));
+        list.add(new Notification(2, SessionManager.getCurrentUserId(),
+                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", false, "2024-03-09"));
+        list.add(new Notification(3, SessionManager.getCurrentUserId(),
+                "[시스템] 다나가에 오신 것을 환영합니다!", true, "2024-03-01"));
+        return list;
+    }
+
+    /**
+     * 샘플 안읽은 알림 데이터 (View 테스트용)
+     * 추후 Controller/Service를 통해 실제 데이터로 대체
+     */
+    private List<Notification> getSampleUnreadNotifications() {
+        List<Notification> list = new ArrayList<>();
+        list.add(new Notification(1, SessionManager.getCurrentUserId(),
+                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", false, "2024-03-10"));
+        list.add(new Notification(2, SessionManager.getCurrentUserId(),
+                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", false, "2024-03-09"));
+        return list;
     }
 
     /**

@@ -23,9 +23,9 @@ public class Product {
     private int conditionId; // DB 실제 컬럼
     private int statusId; // DB 실제 컬럼
     private String createdAt;
-    private String isDeleted;
+    private String is_deleted;
 
-	// JOIN용 추가 필드
+    // JOIN용 추가 필드
     private String categoryName;
     private String itemCondition; // code 테이블과 JOIN해서 얻은 name 값 (상/중/하)
     private String status; // code 테이블과 JOIN해서 얻은 name 값 (ON_SALE/RESERVED)
@@ -49,7 +49,7 @@ public class Product {
     // 전체 필드 생성자
     public Product(int productId, String sellerId, int categoryId, String title,
                    int price, String description, int conditionId,
-                   int statusId, String createdAt) {
+                   int statusId, String createdAt, String isDeleted) {
         this.productId = productId;
         this.sellerId = sellerId;
         this.categoryId = categoryId;
@@ -59,6 +59,7 @@ public class Product {
         this.conditionId = conditionId;
         this.statusId = statusId;
         this.createdAt = createdAt;
+        this.is_deleted = isDeleted;
     }
 
     // Getters and Setters
@@ -133,14 +134,6 @@ public class Product {
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
-    
-    public String getIsDeleted() {
- 		return isDeleted;
- 	}
-
- 	public void setIsDeleted(String isDeleted) {
- 		this.isDeleted = isDeleted;
- 	}
 
     public String getCategoryName() {
         return categoryName;
@@ -166,17 +159,19 @@ public class Product {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "productId=" + productId +
-                ", title='" + title + '\'' +
-                ", price=" + price +
-                ", conditionId=" + conditionId +
-                ", statusId=" + statusId +
-                ", itemCondition='" + itemCondition + '\'' +
-                ", status='" + status + '\'' +
-                ", categoryName='" + categoryName + '\'' +
-                '}';
+    public String getIsDeleted() {
+        return is_deleted;
     }
+
+    public void setIsDeleted(String isDeleted) {
+        this.is_deleted = isDeleted;
+    }
+
+    @Override
+	public String toString() {
+		return "Product [productId=" + productId + ", sellerId=" + sellerId + ", categoryId=" + categoryId + ", title="
+				+ title + ", price=" + price + ", description=" + description + ", conditionId=" + conditionId
+				+ ", statusId=" + statusId + ", createdAt=" + createdAt + ", is_deleted=" + is_deleted
+				+ ", categoryName=" + categoryName + ", itemCondition=" + itemCondition + ", status=" + status + "]";
+	}
 }
