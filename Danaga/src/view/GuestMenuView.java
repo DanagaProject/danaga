@@ -1,6 +1,7 @@
 package view;
 
 import controller.AuthController;
+import dto.Category;
 import dto.Product;
 import java.util.ArrayList;
 import java.util.List;
@@ -140,7 +141,9 @@ public class GuestMenuView {
      * 카테고리별 검색
      */
     private void viewProductsByCategory() {
-        ProductView.printCategoryList(); // 카테고리 목록 출력
+    	//나중에 카테고리조회 구현
+    	List<Category> allCategories = getSampleCategories();
+        ProductView.printCategoryList(allCategories); // 카테고리 목록 출력
         String categoryInput = sc.nextLine().trim();
 
         if ("0".equals(categoryInput)) {
@@ -361,5 +364,19 @@ public class GuestMenuView {
         products.add(p3);
 
         return products;
+    }
+    
+    /**
+     * 카테고리 목록 샘플 데이터 (View 테스트용)
+     * 추후 Controller/Service를 통해 실제 데이터로 대체
+     */
+    private List<Category> getSampleCategories() {
+        List<Category> categories = new ArrayList<>();
+        categories.add(new Category(1, "노트북"));
+        categories.add(new Category(2, "데스크탑"));
+        categories.add(new Category(3, "모니터"));
+        categories.add(new Category(4, "키보드"));
+        categories.add(new Category(5, "기타"));
+        return categories;
     }
 }

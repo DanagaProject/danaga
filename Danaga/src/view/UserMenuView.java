@@ -29,8 +29,8 @@ public class UserMenuView {
             System.out.println("  💻  중고 컴퓨터 거래 사이트");
             System.out.println("════════════════════════════════════════");
             System.out.println("  👤  " + SessionManager.getCurrentUserId() + " 님 환영합니다!");
-            System.out.println("  💰  잔액:  " +BalanceView.formatBalance(SessionManager.getCurrentUser().getBalance())  
-											+ "  |  🔔  새 알림 표시 예정");
+            System.out.println("  💰  잔액:  " + BalanceView.formatBalance(SessionManager.getCurrentUser().getBalance())
+                    + "  |  🔔  알림");
             System.out.println("════════════════════════════════════════");
             System.out.println("  [상품 조회]");
             System.out.println("  1.  상품 전체 목록 보기");
@@ -342,4 +342,5 @@ public class UserMenuView {
         }
         return null;
     }
+
 }
