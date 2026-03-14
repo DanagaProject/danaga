@@ -563,28 +563,28 @@ public class AdminMenuView {
         List<Product> products = new ArrayList<>();
 
         Product p1 = new Product(1, "user01", 1, "LG 그램 17인치 노트북", 1200000,
-                "2023년 구입. 상태 매우 좋습니다.", 1, 10, "2024-03-01");
+                "2023년 구입. 상태 매우 좋습니다.", 1, 10, "2024-03-01", "N");
         p1.setCategoryName("노트북");
         p1.setItemCondition("상");
         p1.setStatus("ON_SALE");
         products.add(p1);
 
         Product p2 = new Product(2, "user02", 7, "RTX 4070 Ti SUPER", 1100000,
-                "ASUS ROG Strix RTX 4070 Ti SUPER.", 1, 11, "2024-03-02");
+                "ASUS ROG Strix RTX 4070 Ti SUPER.", 1, 11, "2024-03-02", "N");
         p2.setCategoryName("GPU");
         p2.setItemCondition("상");
         p2.setStatus("RESERVED");
         products.add(p2);
 
         Product p3 = new Product(3, "user03", 5, "로지텍 MX Master 3", 80000,
-                "로지텍 MX Master 3 무선 마우스.", 2, 9, "2024-03-03");
+                "로지텍 MX Master 3 무선 마우스.", 2, 9, "2024-03-03", "N");
         p3.setCategoryName("마우스");
         p3.setItemCondition("중");
         p3.setStatus("COMPLETED");
         products.add(p3);
 
         Product p4 = new Product(4, "user04", 6, "인텔 i9-13900K", 650000,
-                "미개봉 신품 인텔 i9-13900K.", 1, 10, "2024-03-04");
+                "미개봉 신품 인텔 i9-13900K.", 1, 10, "2024-03-04", "N");
         p4.setCategoryName("CPU");
         p4.setItemCondition("상");
         p4.setStatus("ON_SALE");

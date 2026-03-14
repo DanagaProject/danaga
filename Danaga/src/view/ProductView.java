@@ -62,7 +62,8 @@ public class ProductView {
         System.out.println("  제목        : " + product.getTitle());
         System.out.println("  가격        : " + String.format("%,d원", product.getPrice()));
         System.out.println("  상태        : " + (product.getItemCondition() != null ? product.getItemCondition() : "-"));
-        System.out.println("  판매상태    : " + (product.getStatus() != null ? product.getStatus() : "-"));
+        System.out.println("  판매상태    : " + (product.getStatus() != null ? product.getStatus() : "-") +
+                ("Y".equals(product.getIsDeleted()) ? "  [삭제됨]" : ""));
         System.out.println("  카테고리    : " + (product.getCategoryName() != null ? product.getCategoryName() : "-"));
         System.out.println("  판매자      : " + (product.getSellerId() != null ? product.getSellerId() : "-"));
         System.out.println("  등록일      : " + (product.getCreatedAt() != null ? product.getCreatedAt() : "-"));

@@ -472,7 +472,7 @@ public class MyPageView {
         // 샘플 상품 1 - 판매중
         Product p1 = new Product(11, currentUserId, 1, "맥북 프로 16인치 M2", 2800000,
                 "2023년 구입한 맥북 프로입니다. 상태 매우 좋습니다.",
-                1, 10, "2024-03-01");
+                1, 10, "2024-03-01", "N");
         p1.setCategoryName("노트북");
         p1.setItemCondition("상");
         p1.setStatus("ON_SALE");
@@ -481,7 +481,7 @@ public class MyPageView {
         // 샘플 상품 2 - 예약됨
         Product p2 = new Product(12, currentUserId, 4, "해피해킹 키보드 HHKB", 300000,
                 "해피해킹 키보드 판매합니다. 깨끗하게 사용했습니다.",
-                1, 11, "2024-02-28");
+                1, 11, "2024-02-28", "N");
         p2.setCategoryName("키보드");
         p2.setItemCondition("상");
         p2.setStatus("RESERVED");
@@ -490,7 +490,7 @@ public class MyPageView {
         // 샘플 상품 3 - 판매완료
         Product p3 = new Product(13, currentUserId, 5, "로지텍 G502 마우스", 60000,
                 "로지텍 게이밍 마우스. 1년 사용.",
-                2, 9, "2024-02-20");
+                2, 9, "2024-02-20", "N");
         p3.setCategoryName("마우스");
         p3.setItemCondition("중");
         p3.setStatus("COMPLETED");
@@ -570,7 +570,7 @@ public class MyPageView {
             // 판매중인 상품
             Product p1 = new Product(201, currentUserId, 7, "RTX 4080", 500000,
                     "RTX 4080 GPU 판매합니다.",
-                    1, 10, "2024-03-10");
+                    1, 10, "2024-03-10", "N");
             p1.setCategoryName("GPU");
             p1.setItemCondition("상");
             p1.setStatus("ON_SALE");
@@ -578,7 +578,7 @@ public class MyPageView {
 
             Product p2 = new Product(202, currentUserId, 4, "HHKB", 200000,
                     "해피해킹 키보드입니다.",
-                    1, 10, "2024-03-08");
+                    1, 10, "2024-03-08", "N");
             p2.setCategoryName("키보드");
             p2.setItemCondition("상");
             p2.setStatus("ON_SALE");
@@ -588,7 +588,7 @@ public class MyPageView {
             // 거래중인 상품
             Product p3 = new Product(203, currentUserId, 6, "i9-13900K", 650000,
                     "인텔 i9-13900K CPU",
-                    1, 10, "2024-03-05");
+                    1, 10, "2024-03-05", "N");
             p3.setCategoryName("CPU");
             p3.setItemCondition("상");
             p3.setStatus("RESERVED");
@@ -598,7 +598,7 @@ public class MyPageView {
             // 최근 완료
             Product p5 = new Product(205, currentUserId, 7, "GTX 1080", 280000,
                     "GTX 1080 GPU",
-                    2, 9, "2024-01-10");
+                    2, 9, "2024-01-10", "N");
             p5.setCategoryName("GPU");
             p5.setItemCondition("중");
             p5.setStatus("COMPLETED");
@@ -882,7 +882,8 @@ public class MyPageView {
             original.getDescription(),
             original.getConditionId(),
             original.getStatusId(),
-            original.getCreatedAt()
+            original.getCreatedAt(),
+            original.getIsDeleted()
         );
         copy.setCategoryName(original.getCategoryName());
         copy.setItemCondition(original.getItemCondition());
@@ -1002,7 +1003,7 @@ public class MyPageView {
         // 추가 샘플 - 완료된 상품 더 추가
         Product p6 = new Product(206, currentUserId, 8, "삼성 DDR4 16GB", 90000,
                 "삼성 DDR4 16GB 메모리",
-                2, 9, "2024-02-15");
+                2, 9, "2024-02-15", "N");
         p6.setCategoryName("RAM");
         p6.setItemCondition("중");
         p6.setStatus("COMPLETED");
@@ -1010,7 +1011,7 @@ public class MyPageView {
 
         Product p7 = new Product(207, currentUserId, 3, "LG 24인치 모니터", 150000,
                 "LG 24인치 모니터 판매",
-                2, 8, "2024-01-20");
+                2, 8, "2024-01-20", "N");
         p7.setCategoryName("모니터");
         p7.setItemCondition("중");
         p7.setStatus("COMPLETED");
