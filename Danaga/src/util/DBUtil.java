@@ -38,7 +38,7 @@ public class DBUtil {
             // JDBC 드라이버 로딩
             Class.forName(driver);
 
-            System.out.println("[DBUtil] DB 설정 로드 완료");
+            //System.out.println("[DBUtil] DB 설정 로드 완료");
 
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("[DBUtil] DB 설정 로드 실패: " + e.getMessage());

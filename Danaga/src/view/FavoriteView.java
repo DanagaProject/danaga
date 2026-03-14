@@ -67,14 +67,30 @@ public class FavoriteView {
     }
 
     /**
-     * 즐겨찾기 삭제 헤더
+     * 즐겨찾기 삭제 목록 화면 출력
+     * - categoryId를 번호로 표시 (Controller 연동 시 categoryId로 직접 전달)
+     *
+     * @param favorites Controller에서 전달받은 즐겨찾기 목록
      */
-    public static void printRemoveFavoriteHeader() {
+    public static void printRemoveFavoriteList(List<Category> favorites) {
         System.out.println("\n════════════════════════════════════════");
         System.out.println("           즐겨찾기 삭제");
         System.out.println("════════════════════════════════════════");
-        System.out.println("삭제할 즐겨찾기 번호 입력");
-        System.out.println();
+
+        if (favorites == null || favorites.isEmpty()) {
+            System.out.println("  삭제할 즐겨찾기가 없습니다.");
+        } else {
+            System.out.println("  삭제할 카테고리 번호를 입력하세요");
+            System.out.println();
+            for (Category c : favorites) {
+                System.out.println("  [" + c.getCategoryId() + "]  " + c.getName());
+            }
+        }
+
+        System.out.println("════════════════════════════════════════");
+        System.out.println("  0. 돌아가기");
+        System.out.println("════════════════════════════════════════");
+        System.out.print("  선택 > ");
     }
 
     /**
@@ -102,13 +118,6 @@ public class FavoriteView {
     public static void printRemoveFavoriteSuccess(Category category) {
         System.out.println("\n✅ 즐겨찾기 삭제 완료");
         System.out.println("   카테고리: " + category.getName());
-    }
-
-    /**
-     * 이미 즐겨찾기에 등록된 카테고리 오류 메시지
-     */
-    public static void printAlreadyInFavorite() {
-        System.out.println("\n이미 즐겨찾기에 등록된 카테고리입니다.");
     }
 
     /**
