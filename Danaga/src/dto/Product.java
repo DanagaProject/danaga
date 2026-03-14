@@ -23,8 +23,9 @@ public class Product {
     private int conditionId; // DB 실제 컬럼
     private int statusId; // DB 실제 컬럼
     private String createdAt;
+    private String isDeleted;
 
-    // JOIN용 추가 필드
+	// JOIN용 추가 필드
     private String categoryName;
     private String itemCondition; // code 테이블과 JOIN해서 얻은 name 값 (상/중/하)
     private String status; // code 테이블과 JOIN해서 얻은 name 값 (ON_SALE/RESERVED)
@@ -132,6 +133,14 @@ public class Product {
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
+    
+    public String getIsDeleted() {
+ 		return isDeleted;
+ 	}
+
+ 	public void setIsDeleted(String isDeleted) {
+ 		this.isDeleted = isDeleted;
+ 	}
 
     public String getCategoryName() {
         return categoryName;

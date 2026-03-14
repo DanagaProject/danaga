@@ -32,7 +32,7 @@ public class ProductDAOImpl implements ProductDAO {
 		ResultSet rs = null;
 		List<Product> list = new ArrayList<>();
 		Product product = null;
-		String sql = "select * from product where is_deleted = 'n' order by product_id desc";
+		String sql = "select * from product order by product_id desc";
 	
 		try {
 			con = DBUtil.getConnection();
@@ -81,7 +81,7 @@ public class ProductDAOImpl implements ProductDAO {
 		ResultSet rs = null;
 		Product product = null;
 		List<Product> list = new ArrayList<>();
-		String sql = "select * from product where category_id = ? and is_deleted = 'n' order by product_id desc";
+		String sql = "select * from product where category_id = ? order by product_id desc";
 		
 		try {
 			con = DBUtil.getConnection();
@@ -132,7 +132,7 @@ public class ProductDAOImpl implements ProductDAO {
 		ResultSet rs = null;
 		List<Product> list = new ArrayList<>();
 		Product product = null;
-		String sql = "select * from product where title like ? and is_deleted = 'n'";
+		String sql = "select * from product where title like ? order by product_id desc";
 		
 		try {
 			con = DBUtil.getConnection();
@@ -176,7 +176,110 @@ public class ProductDAOImpl implements ProductDAO {
 		
 		return list;
 	}	
-
+	
+	@Override
+	public List<Product> productSelectBySellerId(String sellerId) throws ProductNotFoundException, DatabaseException {
+		Connection con=null;
+		PreparedStatement ps=null;
+		ResultSet rs = null;
+		List<Product> list = new ArrayList<>();
+		Product product = null;
+		String sql = "select * from product where seller_id = ? order by product_id desc";
+		
+		try {
+			con = DBUtil.getConnection();
+			ps = con.prepareStatement(sql);
+			
+			ps.setString(1, sellerId);
+			
+			rs = ps.executeQuery();
+			while(rs.next()) {
+			    int categoryId=rs.getInt("category_id");
+			    int conditionId=rs.getInt("condition_id");
+			    int statusId=rs.getInt("status_id");
+			    
+				product = new Product(
+						rs.getInt("product_id"), 
+						rs.getString("seller_id"), 
+						categoryId, 
+						rs.getString("title"), 
+						rs.getInt("price"), 
+						rs.getString("description"), 
+						conditionId, 
+						statusId, 
+						rs.getString("created_at"));
+				
+				//이름 가져오기
+				String categoryName = this.categoryNameSelect(con, categoryId);
+				product.setCategoryName(categoryName);
+				String status = this.statusNameSelect(con, statusId);
+				product.setStatus(status);
+				String itemCondition = this.conditionNameSelect(con, conditionId);
+				product.setItemCondition(itemCondition);
+				
+				list.add(product);
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+			throw new ProductNotFoundException("해당 제목의 상품을 찾지 못했습니다.");
+		}finally {
+			DBUtil.close(con,ps,rs);
+		}
+		
+		return list;
+	}
+	//////////////////////////////////////////////////////////////////
+	
+	@Override
+	public Product productSelectById(int productId) throws ProductNotFoundException , DatabaseException{
+		Connection con=null;
+		PreparedStatement ps=null;
+		ResultSet rs = null;
+		Product product = null;
+		String sql = "select * from product where product_id = ? order by product_id desc";
+		
+		try {
+			con = DBUtil.getConnection();
+			ps = con.prepareStatement(sql);
+			
+			ps.setInt(1, productId);
+			
+			rs = ps.executeQuery();
+			while(rs.next()) {
+			    int categoryId=rs.getInt("category_id");
+			    int conditionId=rs.getInt("condition_id");
+			    int statusId=rs.getInt("status_id");
+			    
+				product = new Product(
+						rs.getInt("product_id"), 
+						rs.getString("seller_id"), 
+						categoryId, 
+						rs.getString("title"), 
+						rs.getInt("price"), 
+						rs.getString("description"), 
+						conditionId, 
+						statusId, 
+						rs.getString("created_at"));
+				
+				//이름 가져오기
+				String categoryName = this.categoryNameSelect(con, categoryId);
+				product.setCategoryName(categoryName);
+				String status = this.statusNameSelect(con, statusId);
+				product.setStatus(status);
+				String itemCondition = this.conditionNameSelect(con, conditionId);
+				product.setItemCondition(itemCondition);
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+			throw new ProductNotFoundException("해당 제목의 상품을 찾지 못했습니다.");
+		}finally {
+			DBUtil.close(con,ps,rs);
+		}
+		
+		return product;
+	}
+	
+	//////////////////////////////////////////////////////////////////
 	@Override
 	public int productInsert(Product product) throws DatabaseException {
 		Connection con=null;
@@ -289,7 +392,8 @@ public class ProductDAOImpl implements ProductDAO {
 		
 		return result;
 	}
-
+	
+	/////////////////////////////////////////////////////////////
 	@Override
 	public List<Category> categorySelectAll() throws CategoryNotFoundException {
 		Connection con=null;
@@ -393,6 +497,7 @@ public class ProductDAOImpl implements ProductDAO {
 		return result;
 	}
 	
+	/////////////////////////////////////////////////////////////////////
 	@Override
 	public List<FavoriteCategory> favCategorySeletAllByUser(String currentUserId) throws CategoryNotFoundException, DatabaseException {
 		Connection con=null;
@@ -433,7 +538,7 @@ public class ProductDAOImpl implements ProductDAO {
 	}
 
 	@Override
-	public int favCategoryInsert(String currentUserId, int categoryId) throws CategoryNotFoundException {
+	public int favCategoryInsert(String currentUserId, int categoryId) throws DatabaseException {
 		Connection con=null;
 		PreparedStatement ps=null;
 		String sql = "insert into favorite_category(user_id, category_id) values (?, ?)";
@@ -450,7 +555,7 @@ public class ProductDAOImpl implements ProductDAO {
 			
 		}catch(SQLException e) {
 			e.printStackTrace();
-			throw new CategoryNotFoundException("선호 카테고리를 추가할 수 없습니다.");
+			throw new DatabaseException("선호 카테고리를 추가할 수 없습니다.");
 		}finally {
 			DBUtil.close(con, ps);
 		}
@@ -459,10 +564,10 @@ public class ProductDAOImpl implements ProductDAO {
 	}
 
 	@Override
-	public int favCategoryDelete(String currentUserId) throws CategoryNotFoundException {
+	public int favCategoryDelete(String currentUserId, int cateogryId) throws CategoryNotFoundException {
 		Connection con=null;
 		PreparedStatement ps=null;
-		String sql = "delete from favorite_category where user_id = ?";
+		String sql = "delete from favorite_category where user_id = ? and category_id = ?";
 		int result = 0;		
 		
 		try {
@@ -470,6 +575,7 @@ public class ProductDAOImpl implements ProductDAO {
 			ps = con.prepareStatement(sql);
 			
 			ps.setString(1, currentUserId);
+			ps.setInt(2, cateogryId);
 			
 			result = ps.executeUpdate();
 		}catch(SQLException e) {
@@ -482,6 +588,7 @@ public class ProductDAOImpl implements ProductDAO {
 		return result;
 	}
 	
+	//////////////////////////////////////////////////////////////////////
 	/**
 	 * 카테고리 이름 가져오기
 	 * */
@@ -556,6 +663,5 @@ public class ProductDAOImpl implements ProductDAO {
 		}
 		return itemCondition;
 	}
-
 	
 }

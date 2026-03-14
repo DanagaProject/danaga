@@ -1,10 +1,12 @@
 package view;
 
-import controller.AuthController;
-import controller.ProductController;
-import dto.Product;
 import java.util.List;
 import java.util.Scanner;
+
+import controller.AuthController;
+import controller.ProductController;
+import dto.Category;
+import dto.Product;
 
 /**
  * 비로그인 사용자 메뉴 View
@@ -140,7 +142,8 @@ public class GuestMenuView {
      * 카테고리별 검색
      */
     private void viewProductsByCategory() {
-        ProductView.printCategoryList(); // 카테고리 목록 출력
+    	List<Category> categoryList = ProductController.categorySelectAll(); 
+        ProductView.printCategoryList(categoryList); // 카테고리 목록 출력
         String categoryInput = sc.nextLine().trim();
 
         if ("0".equals(categoryInput)) {
