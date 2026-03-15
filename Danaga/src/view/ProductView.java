@@ -1,5 +1,8 @@
 package view;
 
+import dto.Category;
+import dto.Code;
+import dto.Comment;
 import dto.Product;
 import java.util.List;
 import java.util.Scanner;
@@ -31,7 +34,7 @@ public class ProductView {
         for (Product product : products) {
             System.out.printf("%-6d %-20s %,10d원 %-8s %-10s %-10s%n",
                     product.getProductId(),
-                    truncate(product.getTitle(), 20),
+                    CommonView.truncate(product.getTitle(), 20),
                     product.getPrice(),
                     product.getItemCondition() != null ? product.getItemCondition() : "-",
                     product.getCategoryName() != null ? product.getCategoryName() : "-",
@@ -59,7 +62,8 @@ public class ProductView {
         System.out.println("  제목        : " + product.getTitle());
         System.out.println("  가격        : " + String.format("%,d원", product.getPrice()));
         System.out.println("  상태        : " + (product.getItemCondition() != null ? product.getItemCondition() : "-"));
-        System.out.println("  판매상태    : " + (product.getStatus() != null ? product.getStatus() : "-"));
+        System.out.println("  판매상태    : " + (product.getStatus() != null ? product.getStatus() : "-") +
+                ("Y".equals(product.getIsDeleted()) ? "  [삭제됨]" : ""));
         System.out.println("  카테고리    : " + (product.getCategoryName() != null ? product.getCategoryName() : "-"));
         System.out.println("  판매자      : " + (product.getSellerId() != null ? product.getSellerId() : "-"));
         System.out.println("  등록일      : " + (product.getCreatedAt() != null ? product.getCreatedAt() : "-"));
@@ -67,102 +71,71 @@ public class ProductView {
         System.out.println("  설명        :");
         System.out.println("  " + (product.getDescription() != null ? product.getDescription() : "설명 없음"));
         System.out.println("════════════════════════════════════════════════════════════════════════════════");
+
+        // 댓글 출력 기능
+        System.out.println("\n[ 댓글 ]");
+        controller.CommentController commentController = new controller.CommentController();
+        List<Comment> comments = commentController.getCommentsByProductId(product.getProductId());
+        
+        if (comments.isEmpty()) {
+            System.out.println("  등록된 댓글이 없습니다.");
+        } else {
+            for (Comment c : comments) {
+                String createdAt = c.getCreatedAt();
+                if (createdAt != null && createdAt.length() > 19) {
+                    createdAt = createdAt.substring(0, 19);
+                }
+                System.out.println("  ▶ " + c.getUserId() + " : " + c.getContent() + " [" + createdAt + "]");
+            }
+        }
+        System.out.println("════════════════════════════════════════════════════════════════════════════════");
     }
 
     /**
      * 카테고리 목록 출력
+     *
+     * @param categories 카테고리 목록
      */
-    public static void printCategoryList() {
+    public static void printCategoryList(List<Category> categories) {
         System.out.println("\n════════════════════════════════════════════════════════════════");
         System.out.println("                        카테고리 선택                           ");
         System.out.println("════════════════════════════════════════════════════════════════");
-        System.out.println("  1. 노트북");
-        System.out.println("  2. 데스크탑");
-        System.out.println("  3. 모니터");
-        System.out.println("  4. 키보드");
-        System.out.println("  5. 마우스");
+
+        if (categories != null && !categories.isEmpty()) {
+            for (Category category : categories) {
+                System.out.println("  " + category.getCategoryId() + ". " + category.getName());
+            }
+        } else {
+            System.out.println("  조회된 카테고리가 없습니다.");
+        }
+
         System.out.println("  0. 뒤로가기");
         System.out.println("════════════════════════════════════════════════════════════════");
         System.out.print("  카테고리 선택 > ");
     }
 
     /**
-     * 문자열 자르기 (표시용)
-     * - 한글은 2칸, 영문/숫자는 1칸으로 계산하여 화면 폭 기준으로 자름
-     * - maxWidth를 초과하면 "..."으로 나머지 문자열 표현
+     * 상품 상태 목록 출력 (code 테이블에서 조회된 item_condition 그룹)
+     * - 상품 등록/수정 시 상태 선택 화면
      *
-     * @param str 자를 문자열
-     * @param maxWidth 최대 화면 폭 (칸 수)
-     * @return 잘린 문자열
+     * @param conditions 상태 코드 목록 (CodeController에서 조회)
      */
-    private static String truncate(String str, int maxWidth) {
-        if (str == null) {
-            return "";
-        }
+    public static void printConditionList(List<Code> conditions) {
+        System.out.println("\n════════════════════════════════════════════════════════════════");
+        System.out.println("                        상태 선택                               ");
+        System.out.println("════════════════════════════════════════════════════════════════");
 
-        // 1단계: 전체 문자열의 화면 폭 계산
-        int totalWidth = 0;
-        for (int i = 0; i < str.length(); i++) {
-            totalWidth += getCharWidth(str.charAt(i));
-        }
-
-        // 2단계: 전체 폭이 maxWidth 이하면 원본 그대로 반환
-        if (totalWidth <= maxWidth) {
-            return str;
-        }
-
-        // 3단계: 자를 필요가 있으면 maxWidth - 3(...)까지만 추가하고 "..." 붙임
-        int currentWidth = 0;
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            int charWidth = getCharWidth(c);
-
-            // 현재 문자를 추가하면 "..." 공간까지 고려해서 maxWidth 초과하는지 확인
-            if (currentWidth + charWidth + 3 > maxWidth) {
-                result.append("...");
-                break;
+        if (conditions != null && !conditions.isEmpty()) {
+            for (Code code : conditions) {
+                System.out.println("  " + code.getCodeId() + ". " + code.getName());
             }
-
-            result.append(c);
-            currentWidth += charWidth;
+        } else {
+            System.out.println("  조회된 상태 정보가 없습니다.");
         }
 
-        return result.toString();
-    }
-
-    /**
-     * 문자의 화면 폭 계산
-     * - 한글, 한자, 일본어 등: 2칸
-     * - 영문, 숫자, 기호 등: 1칸
-     *
-     * @param c 폭을 계산할 문자
-     * @return 화면에서 차지하는 칸 수 (1 또는 2)
-     */
-    private static int getCharWidth(char c) {
-        // 한글 음절 (가-힣): AC00-D7A3
-        if (c >= 0xAC00 && c <= 0xD7A3) {
-            return 2;
-        }
-        // 한글 자모 (ㄱ-ㅎ, ㅏ-ㅣ): 1100-11FF, 3130-318F
-        if ((c >= 0x1100 && c <= 0x11FF) || (c >= 0x3130 && c <= 0x318F)) {
-            return 2;
-        }
-        // CJK 통합 한자: 4E00-9FFF
-        if (c >= 0x4E00 && c <= 0x9FFF) {
-            return 2;
-        }
-        // 일본어 히라가나, 가타카나: 3040-30FF
-        if (c >= 0x3040 && c <= 0x30FF) {
-            return 2;
-        }
-        // 전각 기호 및 문자: FF00-FFEF
-        if (c >= 0xFF00 && c <= 0xFFEF) {
-            return 2;
-        }
-        // 그 외 ASCII 및 기본 문자는 1칸
-        return 1;
+        System.out.println("  0. 취소");
+        System.out.println("════════════════════════════════════════════════════════════════");
+        System.out.print("  상태 선택 > ");
     }
 
     // ============================================================================
@@ -227,7 +200,7 @@ public class ProductView {
             } else if (SessionManager.isAdmin()) {
                 // 관리자는 안내 메시지만 표시
                 printProductActionMenu();
-                pauseScreen(sc);
+                CommonView.pauseScreen(sc);
                 return false;
             } else {
                 // 일반 회원: 구매신청 메뉴 표시
@@ -241,7 +214,7 @@ public class ProductView {
                 if ("1".equals(choice)) {
                     // 구매신청 처리 (추후 구현)
                     System.out.println("\n구매신청 기능은 추후 구현 예정입니다.");
-                    pauseScreen(sc);
+                    CommonView.pauseScreen(sc);
                 }
                 return false;
             }
@@ -268,18 +241,6 @@ public class ProductView {
         }
 
         System.out.println("────────────────────────────────────────────────────────────────────────────────");
-    }
-
-    /**
-     * 화면 대기
-     * - "계속하려면 Enter를 누르세요..." 메시지 출력
-     * - 사용자가 Enter를 입력할 때까지 대기
-     *
-     * @param sc Scanner 객체
-     */
-    public static void pauseScreen(Scanner sc) {
-        System.out.print("\n계속하려면 Enter를 누르세요...");
-        sc.nextLine();
     }
 
     /**
