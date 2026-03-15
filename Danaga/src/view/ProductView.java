@@ -213,7 +213,25 @@ public class ProductView {
 
                 if ("1".equals(choice)) {
                     // 구매신청 처리 (추후 구현)
-                    System.out.println("\n구매신청 기능은 추후 구현 예정입니다.");
+                	// [수정된 부분] 실제 구매 로직 호출
+                    System.out.println("\n구매 신청을 진행하시겠습니까? (Y/N)");
+                    if (sc.nextLine().trim().equalsIgnoreCase("Y")) {
+                        // 주문 객체 생성 및 정보 설정
+                        dto.Orders order = new dto.Orders();
+                        order.setProductId(product.getProductId());
+                        order.setBuyerId(SessionManager.getCurrentUser().getUserId()); // 세션에서 현재 아이디 가져오기
+
+                        // 컨트롤러 호출 (없다면 새로 생성해야 합니다)
+                        controller.OrdersController ordersController = new controller.OrdersController();
+                        boolean success = ordersController.placeOrder(order);
+
+                        if (success) {
+                            System.out.println("\n[성공] 주문이 완료되었습니다. 마이페이지에서 확인하세요.");
+                        } else {
+                            // 실패 시 상세 메시지는 컨트롤러/서비스에서 출력하게 구성
+                            System.out.println("\n[실패] 주문 처리에 실패했습니다.");
+                        }
+                    }
                     CommonView.pauseScreen(sc);
                 }
                 return false;

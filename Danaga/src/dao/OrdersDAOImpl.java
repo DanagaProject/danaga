@@ -133,7 +133,7 @@ public class OrdersDAOImpl implements OrdersDAO {
 
 	    try {
 	        con = DBUtil.getConnection();
-	        // 정산(구매확정)에 필요한 price와 seller_id를 가져오기 위해 JOIN 사용
+	        
 	        String sql = "SELECT o.orders_id, o.product_id, o.buyer_id, o.status_id, " +
 	                     "p.price, p.seller_id " +
 	                     "FROM orders o " +
@@ -151,7 +151,7 @@ public class OrdersDAOImpl implements OrdersDAO {
 	            order.setBuyerId(rs.getString("buyer_id"));
 	            order.setStatusId(rs.getInt("status_id"));
 	            
-	            // 💡 주의: DTO에 이 두 필드가 있어야 합니다!
+	            
 	            order.setProductPrice(rs.getInt("price")); 
 	            order.setSellerId(rs.getString("seller_id"));
 	        }
@@ -230,7 +230,7 @@ public class OrdersDAOImpl implements OrdersDAO {
 	        
 	        
 	        
-	        // 1. 주문 상태를 'CONFIRMED'로 변경 (order_id 사용)
+	        
 	        result = this.updateOrdersStatus(con, orders.getOrdersId(), 9);
 	       
 	        
@@ -239,16 +239,16 @@ public class OrdersDAOImpl implements OrdersDAO {
 	            throw new SQLException("주문 상태 변경 실패: 해당 주문이 존재하지 않습니다.");
 	        }
 
-	        // 2. 판매자 정산 (admin -> seller)
+	        
 	       
 	        this.updateUserBalance(con, orders.getSellerId(), orders.getProductPrice());
 	        this.updateUserBalance(con, "admin", -orders.getProductPrice());
 
-	        // 3. 상품 상태 변경
+	        
 	        
 	        this.updateProductStatus(con, orders.getProductId(), 12);
 
-	        // 4. 판매자 알림 전송
+	        
 	        this.insertNotification(con, orders.getSellerId(), 
 	            "주문번호 [" + orders.getOrdersId() + "]의 정산이 완료되었습니다.");
 
@@ -263,6 +263,47 @@ public class OrdersDAOImpl implements OrdersDAO {
 	    return result;
 	}
 	
+	@Override
+    public int cancelComplete(Orders order) throws SQLException {
+        Connection con = null;
+        int result = 0;
+
+        try {
+            con = DBUtil.getConnection();
+            con.setAutoCommit(false);
+
+            
+            result = this.updateOrdersStatus(con, order.getOrdersId(), 7);
+            if (result == 0) {
+                throw new SQLException("주문 상태 변경 실패");
+            }
+
+            
+            this.updateUserBalance(con, "admin", -order.getProductPrice());
+            this.updateUserBalance(con, order.getBuyerId(), order.getProductPrice());
+
+            
+            this.updateProductStatus(con, order.getProductId(), 10);
+
+            
+            this.insertNotification(con, order.getBuyerId(), 
+                "주문번호 [" + order.getOrdersId() + "] 취소 및 환불 처리가 완료되었습니다.");
+            
+            if (order.getSellerId() != null) {
+                this.insertNotification(con, order.getSellerId(), 
+                    "주문번호 [" + order.getOrdersId() + "] 거래가 최종 취소되었습니다.");
+            }
+
+            con.commit();
+        } catch (SQLException e) {
+            if (con != null) try { con.rollback(); } catch (SQLException ex) {}
+            throw e;
+        } finally {
+            DBUtil.close(con, null, null);
+        }
+
+        return result;
+    }
 	
 ////////////////////////////////////////////////////////////////////////////////////
 	public void updateUserBalance(Connection con, String userId, int amount) throws SQLException {

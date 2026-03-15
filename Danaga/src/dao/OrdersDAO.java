@@ -35,4 +35,10 @@ public interface OrdersDAO {
 	 */
 	int confirmTrade(Orders orders) throws SQLException;
 	
+	/**
+	 * 취소완료 및 환불
+	 */
+	int cancelComplete(Orders order) throws SQLException;
+	
+	
 }

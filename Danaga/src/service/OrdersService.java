@@ -23,16 +23,13 @@ public interface OrdersService {
 
     // 5. 취소 요청
     void cancleRequest(int orderId) throws SQLException;
+    
+    // 6. 취소 완료 및 환불
+    void cancelComplete(int orderId) throws SQLException;
+    
+    // 7. 관리자 직권 강제 취소 및 환불 집행
+    void adminForceCancel(int orderId, String userRole) throws SQLException;
+    
+    // 8. 취소 거절 및 강제 구매 확정 (먹튀 분쟁 조정 - 관리자용)
+    void adminForceTrade(int orderId, String userRole) throws SQLException;
 }
-//
-//    /**
-//     * 거래 취소 동의 및 거절 - 판매자
-//     * 동의(isAgree=true) 시 환불 처리 및 상품 상태 롤백, 거절 시 CANCEL_REJECTED 상태로 변경합니다.
-//     */
-//    void replyCancelRequest(int orderId, boolean isAgree, String buyerId, int productId, int price) throws DatabaseException;
-//
-//    /**
-//     * 거래 취소 동의(강제 집행) - 관리자
-//     * CANCEL_REJECTED 상태의 거래를 관리자 직권으로 환불 처리합니다.
-//     */
-//    void adminForceCancel(int orderId, String buyerId, int productId, int price) throws DatabaseException;
