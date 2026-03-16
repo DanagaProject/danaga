@@ -8,4 +8,5 @@ select * from favorite_category;
 select * from category;
 select * from code;
 
-select product_id, seller_id, category_id, title, price, description, condition_id, created_at
+select product_id, seller_id, category_id, title, price, description, condition_id, created_at;
+desc product;
