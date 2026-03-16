@@ -23,13 +23,14 @@ public class ProductController {
 		List<Product> list = null;
 		try {
 			list = productService.productSelectAll();
-		}catch(ProductNotFoundException e1) {
-			FailView.printMessage(e1.getMessage());
-		}catch(DatabaseException e2) {
-			FailView.printMessage(e2.getMessage());
+		}catch(ProductNotFoundException e) {
+			FailView.printMessage(e.getMessage());
+		}catch(DatabaseException e) {
+			FailView.printMessage(e.getMessage());
 		}
 		return list;
 	}
+	
 	
 	/**
 	 * 카테고리별 상품 조회
@@ -55,21 +56,6 @@ public class ProductController {
 		List<Product> list = null;
 		try {
 			list = productService.productSelectByName(keyword);   
-        }catch(ProductNotFoundException e) {
-        	FailView.printMessage(e.getMessage());
-        }catch(DatabaseException e) {
-			FailView.printMessage(e.getMessage());
-		}
-		return list;
-	}
-	
-	/**
-	 * 사용자의 판매 상품 조회(수정/삭제용)
-	 * */
-	public static List<Product> productSelectBySellerOnSale() {
-		List<Product> list = null;
-		try {
-			list = productService.productSelectBySellerOnSale();   
         }catch(ProductNotFoundException e) {
         	FailView.printMessage(e.getMessage());
         }catch(DatabaseException e) {
@@ -139,7 +125,7 @@ public class ProductController {
 	}
 	
 	/**
-	 * 카테고리 조회
+	 * 카테고리 목록 조회
 	 * */
 	public static List<Category> categorySelectAll(){
 		List<Category> list = null;

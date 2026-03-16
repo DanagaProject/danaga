@@ -51,16 +51,10 @@ public interface ProductDAO {
 	/**
 	 * 상품 삭제(is_deleted)
 	 * */
-	int productDelete(int productId) throws ProductNotFoundException;
+	int productDelete(int productId) throws ProductNotFoundException;	
 	
 	/**
-	 * 추가 기능
-	 * 상품 찜하기
-	 * */
-	
-	
-	/**
-	 * 카테고리 조회
+	 * 카테고리 목록 조회
 	 * */
 	List<Category> categorySelectAll() throws CategoryNotFoundException;
 	

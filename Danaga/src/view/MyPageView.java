@@ -1,6 +1,7 @@
 package view;
 
 import controller.CodeController;
+import controller.ProductController;
 import dto.Category;
 import dto.Code;
 import dto.Notification;
@@ -613,11 +614,20 @@ public class MyPageView {
      */
     private void manageMyProducts() {
         while (true) {
-            // 샘플 데이터 가져오기 (추후 Controller를 통해 실제 데이터 조회)
-            List<Product> onSaleProducts = getSampleProductsByStatus("ON_SALE");
-            List<Product> reservedProducts = getSampleProductsByStatus("RESERVED");
-            List<Product> completedProducts = getSampleProductsByStatus("COMPLETED");
-
+            // 샘플 데이터 가져오기 (추후 Controller를 통해 실제 데이터 조회)       
+        	List<Product> allProducts = ProductController.productSelectBySellerAll();
+        	List<Product> onSaleProducts = new ArrayList<>();
+        	List<Product> reservedProducts = new ArrayList<>();
+        	List<Product> completedProducts = new ArrayList<>();
+ 
+        	for (Product p : allProducts) {
+        	    switch (p.getStatusId()) {
+        	        case 10 -> onSaleProducts.add(p);
+        	        case 11 -> reservedProducts.add(p);
+        	        case 14 -> completedProducts.add(p);
+        	    }
+        	}
+        	
             // SaleView를 사용하여 상품 관리 화면 출력
             SaleView.printProductManagement(onSaleProducts, reservedProducts, completedProducts);
 
@@ -661,10 +671,10 @@ public class MyPageView {
     private Product selectProductToUpdate(List<Product> onSaleProducts) {
         SaleView.printUpdateProductHeader();
 
-        if (onSaleProducts == null || onSaleProducts.isEmpty()) {
+        /*if (onSaleProducts == null || onSaleProducts.isEmpty()) {
             System.out.println("수정 가능한 상품이 없습니다.");
             return null;
-        }
+        }*/
 
         for (Product product : onSaleProducts) {
             System.out.println("[" + product.getProductId() + "]  " +
@@ -704,7 +714,7 @@ public class MyPageView {
 
             if ("0".equals(choice)) {
                 if (confirmProductUpdate(originalProduct, updatedProduct)) {
-                    System.out.println("\n[TODO] 상품 수정 처리 - Controller/Service 연동 예정");
+                    ProductController.productUpdate(updatedProduct);
                     CommonView.printSuccessMessage("상품 수정 완료");
                 } else {
                     System.out.println("\n수정을 취소했습니다.");
@@ -813,7 +823,7 @@ public class MyPageView {
      */
     private void updateProductCategory(Product product) {
         // 카테고리 목록 조회 (추후 DAO에서 조회)
-        List<Category> categories = getSampleCategories();
+        List<Category> categories = ProductController.categorySelectAll();
 
         ProductView.printCategoryList(categories);
         String catInput = sc.nextLine().trim();
@@ -927,11 +937,11 @@ public class MyPageView {
         SaleView.printDeleteProductHeader();
 
         // ON_SALE 상태인 상품만 표시
-        if (onSaleProducts == null || onSaleProducts.isEmpty()) {
+        /*if (onSaleProducts == null || onSaleProducts.isEmpty()) {
             System.out.println("삭제 가능한 상품이 없습니다.");
             CommonView.pauseScreen(sc);
             return;
-        }
+        }*/
 
         for (Product product : onSaleProducts) {
             System.out.println("[" + product.getProductId() + "]  " +
@@ -955,7 +965,7 @@ public class MyPageView {
                 String confirm = sc.nextLine().trim();
 
                 if ("1".equals(confirm)) {
-                    System.out.println("\n[TODO] 상품 삭제 처리 - Controller/Service 연동 예정");
+                    ProductController.productDelete(productId);
                     CommonView.printSuccessMessage("상품 삭제 완료");
                     CommonView.pauseScreen(sc);
                 } else if ("0".equals(confirm)) {
@@ -976,7 +986,7 @@ public class MyPageView {
      */
     private void viewAllProductHistory() {
         // 샘플 데이터 가져오기 (추후 Controller를 통해 실제 데이터 조회)
-        List<Product> allProducts = getSampleAllProducts();
+        List<Product> allProducts = ProductController.productSelectBySellerAll();
 
         // SaleView를 사용하여 전체 상품 이력 출력
         SaleView.printAllProductHistory(allProducts);
@@ -1031,7 +1041,7 @@ public class MyPageView {
         if (newProduct == null) {
             return; // 취소
         }
-
+        
         // 등록 확인
         if (confirmProductRegistration(newProduct)) {
             System.out.println("\n[TODO] 상품 등록 처리 - Controller/Service 연동 예정");
@@ -1203,8 +1213,9 @@ public class MyPageView {
         while (true) {
             SaleView.printRegisterProductConfirm(product);
             String confirm = sc.nextLine().trim();
-
+            
             if ("1".equals(confirm)) {
+            	ProductController.productInsert(product);
                 return true;
             } else if ("0".equals(confirm)) {
                 return false;
@@ -1215,9 +1226,6 @@ public class MyPageView {
         }
     }
 
-    /**
-     * 즐겨찾기 카테고리 관리
-     */
     /**
      * 즐겨찾기 카테고리 관리
      */

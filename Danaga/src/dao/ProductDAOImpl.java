@@ -67,6 +67,7 @@ public class ProductDAOImpl implements ProductDAO {
 				list.add(product);
 			}
 		}catch(SQLException e){
+			e.printStackTrace();
 			throw new ProductNotFoundException("상품 목록을 찾지 못했습니다.");
 		}finally {
 			DBUtil.close(con, ps, rs);
@@ -430,7 +431,7 @@ public class ProductDAOImpl implements ProductDAO {
 		
 		return list;
 	}
-
+	
 	@Override
 	public int categoryInsert(String name) throws DatabaseException {
 		Connection con=null;

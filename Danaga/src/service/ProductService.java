@@ -37,13 +37,6 @@ public interface ProductService {
 	List<Product> productSelectByName(String keyword) throws ProductNotFoundException, DatabaseException;
 	
 	/**
-	 * 로그인한 유저의 상품 조회(수정/삭제용, 판매중인 상품만, 최신순)
-	 * 유효성 검사: 조회된 상품이 없으면 예외처리
-	 * @return 현재 로그인한 사용자의 판매 중인 상품 목록
-	 * */
-	List<Product> productSelectBySellerOnSale() throws ProductNotFoundException, DatabaseException;
-	
-	/**
 	 * 로그인한 유저의 판매 상품 조회(마이페이지용, 삭제된 상품 제외, 최신순)
 	 * 유효성 검사: 조회된 상품이 없으면 예외처리
 	 * @return 현재 로그인한 사용자의 전체 판매 상품 목록 (판매중/거래중/판매완료 모두 포함)
@@ -83,7 +76,7 @@ public interface ProductService {
 	int productDelete(int productId) throws ProductNotFoundException, DatabaseException;
 	
 	/**
-	 * 카테고리 조회(관리자 전용)
+	 * 카테고리 목록 조회(관리자 전용)
 	 * 유효성 검사: 카테고리 목록이 비어 있으면 예외처리
 	 * @return 전체 카테고리 목록
 	 * */
