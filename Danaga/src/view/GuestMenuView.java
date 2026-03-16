@@ -40,13 +40,19 @@ public class GuestMenuView {
 
             switch (menu) {
                 case "1":
-                    viewAllProducts();
+                    if (viewAllProducts()) {
+                        return; // 로그인 성공 시 메인 메뉴로 돌아감
+                    }
                     break;
                 case "2":
-                    viewProductsByCategory();
+                    if (viewProductsByCategory()) {
+                        return; // 로그인 성공 시 메인 메뉴로 돌아감
+                    }
                     break;
                 case "3":
-                    viewProductByName();
+                    if (viewProductByName()) {
+                        return; // 로그인 성공 시 메인 메뉴로 돌아감
+                    }
                     break;
                 case "4":
                     if (login()) {
@@ -111,8 +117,9 @@ public class GuestMenuView {
 
     /**
      * 상품 전체 목록 보기
+     * @return 로그인 성공 여부
      */
-    private void viewAllProducts() {
+    private boolean viewAllProducts() {
         List<Product> products = getSampleProducts();
         ProductView.printProductList(products); // 상품 목록 표 형식 출력
 
@@ -129,39 +136,43 @@ public class GuestMenuView {
                     if (loginSuccess) {
                         // 로그인 성공 시 다시 상품 상세보기 (이번에는 로그인 상태)
                         ProductView.showProductDetail(sc, products, productId);
+                        // 상품 상세에서 돌아온 후, GuestMenuView를 빠져나가서 UserMenuView로 이동
+                        return true;
                     }
                 }
             } catch (NumberFormatException e) {
                 System.out.println("잘못된 입력입니다.");
             }
         }
+        return false;
     }
 
     /**
      * 카테고리별 검색
+     * @return 로그인 성공 여부
      */
-    private void viewProductsByCategory() {
+    private boolean viewProductsByCategory() {
     	//나중에 카테고리조회 구현
     	List<Category> allCategories = getSampleCategories();
         ProductView.printCategoryList(allCategories); // 카테고리 목록 출력
         String categoryInput = sc.nextLine().trim();
 
         if ("0".equals(categoryInput)) {
-            return; // 뒤로가기
+            return false; // 뒤로가기
         }
 
         try {
             int categoryId = Integer.parseInt(categoryInput);
             if (categoryId < 1 || categoryId > 10) {
                 System.out.println("잘못된 카테고리 번호입니다.");
-                return;
+                return false;
             }
 
             List<Product> filteredProducts = getSampleFilterdProducts();
             //filteredProducts.clear(); //조회내용 없을시 테스트용
             if (filteredProducts.isEmpty()) {
                 System.out.println("\n해당 카테고리에 상품이 없습니다.");
-                return;
+                return false;
             }
 
             ProductView.printProductList(filteredProducts); // 카테고리별 상품 목록 출력
@@ -178,18 +189,22 @@ public class GuestMenuView {
                     if (loginSuccess) {
                         // 로그인 성공 시 다시 상품 상세보기 (이번에는 로그인 상태)
                         ProductView.showProductDetail(sc, filteredProducts, productId);
+                        // 상품 상세에서 돌아온 후, GuestMenuView를 빠져나가서 UserMenuView로 이동
+                        return true;
                     }
                 }
             }
         } catch (NumberFormatException e) {
             System.out.println("잘못된 입력입니다.");
         }
+        return false;
     }
 
     /**
      * 상품명으로 검색
+     * @return 로그인 성공 여부
      */
-    private void viewProductByName() {
+    private boolean viewProductByName() {
         System.out.println("\n════════════════════════════════════════");
         System.out.println("           상품명 검색");
         System.out.println("════════════════════════════════════════");
@@ -198,14 +213,14 @@ public class GuestMenuView {
 
         if (productName.isEmpty()) {
             System.out.println("상품명을 입력해주세요.");
-            return;
+            return false;
         }
 
         List<Product> searchResults = getSampleFilterdProducts();
         //searchResults.clear(); //조회내용 없을시 테스트용
         if (searchResults.isEmpty()) {
             System.out.println("\n검색된 상품이 없습니다.");
-            return;
+            return false;
         }
 
         ProductView.printProductList(searchResults); // 검색된 상품 목록 출력
@@ -223,12 +238,15 @@ public class GuestMenuView {
                     if (loginSuccess) {
                         // 로그인 성공 시 다시 상품 상세보기 (이번에는 로그인 상태)
                         ProductView.showProductDetail(sc, searchResults, productId);
+                        // 상품 상세에서 돌아온 후, GuestMenuView를 빠져나가서 UserMenuView로 이동
+                        return true;
                     }
                 }
             } catch (NumberFormatException e) {
                 System.out.println("잘못된 입력입니다. 숫자를 입력해주세요.");
             }
         }
+        return false;
     }
 
     /**
