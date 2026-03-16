@@ -17,4 +17,14 @@ public interface CommentService {
      * 댓글 등록
      */
     void addComment(Comment comment) throws DatabaseException;
+
+    /**
+     * 댓글 수정
+     */
+    void updateComment(Comment comment) throws DatabaseException;
+
+    /**
+     * 댓글 삭제
+     */
+    void deleteComment(int commentId) throws DatabaseException;
 }

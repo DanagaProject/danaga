@@ -82,10 +82,7 @@ public class ProductView {
         } else {
             for (Comment c : comments) {
                 String createdAt = c.getCreatedAt();
-                if (createdAt != null && createdAt.length() > 19) {
-                    createdAt = createdAt.substring(0, 19);
-                }
-                System.out.println("  ▶ " + c.getUserId() + " : " + c.getContent() + " [" + createdAt + "]");
+                System.out.println("  [" +c.getCommentId() + "] " + c.getUserId() + " : " + c.getContent() + " [" + createdAt + "]");
             }
         }
         System.out.println("════════════════════════════════════════════════════════════════════════════════");
@@ -184,39 +181,64 @@ public class ProductView {
 
             // 비회원이면 로그인 유도 메뉴 표시
             if (!SessionManager.isLoggedIn()) {
-                System.out.println("────────────────────────────────────────────────────────────────────────────────");
-                System.out.println("  ※ 이 상품을 구매하려면 로그인이 필요합니다.");
-                System.out.println("────────────────────────────────────────────────────────────────────────────────");
-                System.out.println("  1. 로그인");
-                System.out.println("  0. 돌아가기");
-                System.out.println("────────────────────────────────────────────────────────────────────────────────");
-                System.out.print("  선택 > ");
-                String choice = sc.nextLine().trim();
+                while (true) {
+                    System.out.println("────────────────────────────────────────────────────────────────────────────────");
+                    System.out.println("  ※ 이 상품을 구매하려면 로그인이 필요합니다.");
+                    System.out.println("────────────────────────────────────────────────────────────────────────────────");
+                    System.out.println("  1. 로그인");
+                    System.out.println("  0. 돌아가기");
+                    System.out.println("────────────────────────────────────────────────────────────────────────────────");
+                    System.out.print("  선택 > ");
+                    String choice = sc.nextLine().trim();
 
-                if ("1".equals(choice)) {
-                    return true; // 로그인 필요
+                    if ("1".equals(choice)) {
+                        return true; // 로그인 필요
+                    } else if ("0".equals(choice)) {
+                        return false; // 돌아가기
+                    } else {
+                        System.out.println("잘못된 입력입니다. 1 또는 0을 입력해주세요.");
+                    }
                 }
-                return false;
             } else if (SessionManager.isAdmin()) {
                 // 관리자는 안내 메시지만 표시
                 printProductActionMenu();
                 CommonView.pauseScreen(sc);
                 return false;
             } else {
-                // 일반 회원: 구매신청 메뉴 표시
-                System.out.println("────────────────────────────────────────────────────────────────────────────────");
-                System.out.println("  1. 구매신청");
-                System.out.println("  0. 돌아가기");
-                System.out.println("────────────────────────────────────────────────────────────────────────────────");
-                System.out.print("  선택 > ");
-                String choice = sc.nextLine().trim();
+                // 일반 회원: 댓글 + 구매신청 메뉴 표시
+                while (true) {
+                    System.out.println("────────────────────────────────────────────────────────────────────────────────");
+                    System.out.println("  1. 댓글 등록");
+                    System.out.println("  2. 댓글 수정");
+                    System.out.println("  3. 댓글 삭제");
+                    System.out.println("  4. 구매신청");
+                    System.out.println("  0. 돌아가기");
+                    System.out.println("────────────────────────────────────────────────────────────────────────────────");
+                    System.out.print("  선택 > ");
+                    String choice = sc.nextLine().trim();
 
-                if ("1".equals(choice)) {
-                    // 구매신청 처리 (추후 구현)
-                    System.out.println("\n구매신청 기능은 추후 구현 예정입니다.");
-                    CommonView.pauseScreen(sc);
+                    if ("1".equals(choice)) {
+                        handleAddComment(product.getProductId(), sc);
+                        // 댓글 목록 새로고침을 위해 상품 상세를 다시 출력
+                        printProductDetail(product);
+                    } else if ("2".equals(choice)) {
+                        handleUpdateComment(product.getProductId(), sc);
+                        // 댓글 목록 새로고침을 위해 상품 상세를 다시 출력
+                        printProductDetail(product);
+                    } else if ("3".equals(choice)) {
+                        handleDeleteComment(product.getProductId(), sc);
+                        // 댓글 목록 새로고침을 위해 상품 상세를 다시 출력
+                        printProductDetail(product);
+                    } else if ("4".equals(choice)) {
+                        // 구매신청 처리 (추후 구현)
+                        System.out.println("\n구매신청 기능은 추후 구현 예정입니다.");
+                        CommonView.pauseScreen(sc);
+                    } else if ("0".equals(choice)) {
+                        return false;
+                    } else {
+                        System.out.println("잘못된 입력입니다.");
+                    }
                 }
-                return false;
             }
         } else {
             System.out.println("해당 상품을 찾을 수 없습니다.");
@@ -241,6 +263,192 @@ public class ProductView {
         }
 
         System.out.println("────────────────────────────────────────────────────────────────────────────────");
+    }
+
+    /**
+     * 댓글 등록 처리
+     *
+     * @param productId 상품 ID
+     * @param sc Scanner 객체
+     */
+    private static void handleAddComment(int productId, Scanner sc) {
+        System.out.println("\n════════════════════════════════════════════════════════════════════════════════");
+        System.out.println("                                 댓글 등록                                       ");
+        System.out.println("════════════════════════════════════════════════════════════════════════════════");
+        System.out.print("  댓글 내용 (취소: 0) > ");
+
+        String content = sc.nextLine().trim();
+
+        if ("0".equals(content)) {
+            System.out.println("댓글 등록이 취소되었습니다.");
+            return;
+        }
+
+        if (content.isEmpty()) {
+            System.out.println("댓글 내용을 입력해주세요.");
+            return;
+        }
+
+        String userId = SessionManager.getCurrentUserId();
+        controller.CommentController commentController = new controller.CommentController();
+        commentController.addComment(productId, userId, content);
+    }
+
+    /**
+     * 댓글 수정 처리
+     *
+     * @param productId 상품 ID
+     * @param sc Scanner 객체
+     */
+    private static void handleUpdateComment(int productId, Scanner sc) {
+        controller.CommentController commentController = new controller.CommentController();
+        List<Comment> comments = commentController.getCommentsByProductId(productId);
+        String currentUserId = SessionManager.getCurrentUserId();
+
+        // 본인이 작성한 댓글 필터링
+        List<Comment> myComments = new java.util.ArrayList<>();
+        for (Comment c : comments) {
+            if (currentUserId.equals(c.getUserId())) {
+                myComments.add(c);
+            }
+        }
+
+        if (myComments.isEmpty()) {
+            System.out.println("\n수정할 수 있는 댓글이 없습니다.");
+            return;
+        }
+
+        System.out.println("\n════════════════════════════════════════════════════════════════════════════════");
+        System.out.println("                            내가 작성한 댓글                                     ");
+        System.out.println("════════════════════════════════════════════════════════════════════════════════");
+
+        for (int i = 0; i < myComments.size(); i++) {
+            Comment c = myComments.get(i);
+            String createdAt = c.getCreatedAt();
+            if (createdAt != null && createdAt.length() > 19) {
+                createdAt = createdAt.substring(0, 19);
+            }
+            System.out.println("  [" + (i + 1) + "] " + c.getContent() + " [" + createdAt + "]");
+        }
+
+        System.out.println("────────────────────────────────────────────────────────────────────────────────");
+        System.out.print("  수정할 댓글 번호 (취소: 0) > ");
+
+        String input = sc.nextLine().trim();
+
+        if ("0".equals(input)) {
+            return;
+        }
+
+        try {
+            int index = Integer.parseInt(input) - 1;
+
+            if (index < 0 || index >= myComments.size()) {
+                System.out.println("잘못된 댓글 번호입니다.");
+                return;
+            }
+
+            Comment selectedComment = myComments.get(index);
+
+            System.out.println("\n현재 내용: " + selectedComment.getContent());
+            System.out.print("새로운 내용 (취소: 0) > ");
+
+            String newContent = sc.nextLine().trim();
+
+            if ("0".equals(newContent)) {
+                System.out.println("댓글 수정이 취소되었습니다.");
+                return;
+            }
+
+            if (newContent.isEmpty()) {
+                System.out.println("댓글 내용을 입력해주세요.");
+                return;
+            }
+
+            System.out.print("수정하시겠습니까? (Y/N) > ");
+            String confirm = sc.nextLine().trim().toUpperCase();
+
+            if ("Y".equals(confirm)) {
+                commentController.updateComment(selectedComment.getCommentId(), newContent);
+            } else {
+                System.out.println("댓글 수정이 취소되었습니다.");
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("잘못된 입력입니다.");
+        }
+    }
+
+    /**
+     * 댓글 삭제 처리
+     *
+     * @param productId 상품 ID
+     * @param sc Scanner 객체
+     */
+    private static void handleDeleteComment(int productId, Scanner sc) {
+        controller.CommentController commentController = new controller.CommentController();
+        List<Comment> comments = commentController.getCommentsByProductId(productId);
+        String currentUserId = SessionManager.getCurrentUserId();
+
+        // 본인이 작성한 댓글 필터링
+        List<Comment> myComments = new java.util.ArrayList<>();
+        for (Comment c : comments) {
+            if (currentUserId.equals(c.getUserId())) {
+                myComments.add(c);
+            }
+        }
+
+        if (myComments.isEmpty()) {
+            System.out.println("\n삭제할 수 있는 댓글이 없습니다.");
+            return;
+        }
+
+        System.out.println("\n════════════════════════════════════════════════════════════════════════════════");
+        System.out.println("                            내가 작성한 댓글                                     ");
+        System.out.println("════════════════════════════════════════════════════════════════════════════════");
+
+        for (int i = 0; i < myComments.size(); i++) {
+            Comment c = myComments.get(i);
+            String createdAt = c.getCreatedAt();
+            if (createdAt != null && createdAt.length() > 19) {
+                createdAt = createdAt.substring(0, 19);
+            }
+            System.out.println("  [" + (i + 1) + "] " + c.getContent() + " [" + createdAt + "]");
+        }
+
+        System.out.println("────────────────────────────────────────────────────────────────────────────────");
+        System.out.print("  삭제할 댓글 번호 (취소: 0) > ");
+
+        String input = sc.nextLine().trim();
+
+        if ("0".equals(input)) {
+            return;
+        }
+
+        try {
+            int index = Integer.parseInt(input) - 1;
+
+            if (index < 0 || index >= myComments.size()) {
+                System.out.println("잘못된 댓글 번호입니다.");
+                return;
+            }
+
+            Comment selectedComment = myComments.get(index);
+
+            System.out.println("\n삭제할 댓글: " + selectedComment.getContent());
+            System.out.print("정말 삭제하시겠습니까? (Y/N) > ");
+
+            String confirm = sc.nextLine().trim().toUpperCase();
+
+            if ("Y".equals(confirm)) {
+                commentController.deleteComment(selectedComment.getCommentId());
+            } else {
+                System.out.println("댓글 삭제가 취소되었습니다.");
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("잘못된 입력입니다.");
+        }
     }
 
     /**
