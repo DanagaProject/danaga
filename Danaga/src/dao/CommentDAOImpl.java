@@ -71,7 +71,7 @@ public class CommentDAOImpl implements CommentDAO {
     public int updateComment(Comment comment) throws DatabaseException {
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "UPDATE comments SET content = ?, updated_at = SYSDATE WHERE comment_id = ?";
+        String sql = "UPDATE comments SET content = ?, updated_at = NOW() WHERE comment_id = ?";
 
         try {
             con = DBUtil.getConnection();
