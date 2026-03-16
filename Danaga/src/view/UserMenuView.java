@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import controller.ProductController;
+
 /**
  * 일반 사용자 메뉴 View
  * - 로그인한 회원이 사용하는 메뉴
@@ -78,7 +80,7 @@ public class UserMenuView {
      * 상품 전체 목록 보기
      */
     private void viewAllProducts() {
-        List<Product> products = getSampleProducts();
+        List<Product> products = ProductController.productSelectAll();
         ProductView.printProductList(products);
 
         System.out.print("\n번호입력(상세보기) (0: 뒤로가기) > ");
@@ -99,7 +101,7 @@ public class UserMenuView {
      */
     private void viewProductsByCategory() {
         // 카테고리 목록 조회 (추후 DAO에서 조회)
-        List<Category> categories = getSampleCategories();
+        List<Category> categories = ProductController.categorySelectAll();
 
         ProductView.printCategoryList(categories);
         String categoryInput = sc.nextLine().trim();
@@ -118,7 +120,7 @@ public class UserMenuView {
                 return;
             }
 
-            List<Product> filteredProducts = getSampleFilteredProducts();
+            List<Product> filteredProducts = ProductController.productSelectByCategory(categoryId);
             if (filteredProducts.isEmpty()) {
                 System.out.println("\n해당 카테고리에 상품이 없습니다.");
                 return;
@@ -153,7 +155,7 @@ public class UserMenuView {
             return;
         }
 
-        List<Product> searchResults = getSampleFilteredProducts();
+        List<Product> searchResults = ProductController.productSelectByName(productName);
         if (searchResults.isEmpty()) {
             System.out.println("\n검색된 상품이 없습니다.");
             return;
@@ -177,7 +179,7 @@ public class UserMenuView {
     /**
      * 샘플 상품 데이터 생성 (View 테스트용)
      */
-    private List<Product> getSampleProducts() {
+    /*private List<Product> getSampleProducts() {
         List<Product> products = new ArrayList<>();
 
         // 샘플 상품 1 - 노트북
@@ -271,12 +273,12 @@ public class UserMenuView {
         products.add(p10);
 
         return products;
-    }
+    }*/
 
     /**
      * 샘플 필터링된 상품 데이터 생성 (View 테스트용)
      */
-    private List<Product> getSampleFilteredProducts() {
+    /*private List<Product> getSampleFilteredProducts() {
         List<Product> products = new ArrayList<>();
 
         // 샘플 상품 1 - 노트북
@@ -307,13 +309,13 @@ public class UserMenuView {
         products.add(p3);
 
         return products;
-    }
+    }*/
 
     /**
      * 카테고리 목록 샘플 데이터 (View 테스트용)
      * 추후 Controller/Service를 통해 실제 데이터로 대체
      */
-    private List<Category> getSampleCategories() {
+    /*private List<Category> getSampleCategories() {
         List<Category> categories = new ArrayList<>();
         categories.add(new Category(1, "노트북"));
         categories.add(new Category(2, "데스크탑"));
@@ -326,7 +328,7 @@ public class UserMenuView {
         categories.add(new Category(9, "저장장치"));
         categories.add(new Category(10, "기타"));
         return categories;
-    }
+    }*/
 
     /**
      * ID로 카테고리 찾기

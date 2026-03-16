@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import controller.ProductController;
+
 /**
  * 관리자 메뉴 View (SCR-019)
  * - 관리자 메인 메뉴 흐름 제어
@@ -113,7 +115,7 @@ public class AdminMenuView {
     private void viewAllProducts() {
         // TODO: Controller 연동 - 전체 상품 조회 (모든 상태 포함)
         // List<Product> products = productController.getAllProductsForAdmin();
-        List<Product> products = getSampleAllStatusProducts();
+        List<Product> products = ProductController.adminProductSelectAll();
 
         ProductView.printProductList(products);
 
@@ -136,7 +138,7 @@ public class AdminMenuView {
     private void viewProductsByCategory() {
         // TODO: Controller 연동 - 카테고리 목록 조회
         // List<Category> categories = categoryController.getAllCategories();
-        List<Category> categories = getSampleCategories();
+        List<Category> categories = ProductController.categorySelectAll();
 
         ProductView.printCategoryList(categories);
         String categoryInput = sc.nextLine().trim();
@@ -149,7 +151,7 @@ public class AdminMenuView {
             int categoryId = Integer.parseInt(categoryInput);
             // TODO: Controller 연동 - 카테고리별 상품 조회 (모든 상태 포함, 유효하지 않은 ID면 빈 목록 반환)
             // List<Product> filteredProducts = productController.getProductsByCategoryForAdmin(categoryId);
-            List<Product> filteredProducts = getSampleAllStatusProducts();
+            List<Product> filteredProducts = ProductController.adminProductSelectByCategory(categoryId);
 
             if (filteredProducts.isEmpty()) {
                 System.out.println("\n해당 카테고리에 상품이 없습니다.");
@@ -191,7 +193,7 @@ public class AdminMenuView {
 
         // TODO: Controller 연동 - 상품명으로 조회 (모든 상태 포함)
         // List<Product> searchResults = productController.searchProductsByNameForAdmin(keyword);
-        List<Product> searchResults = getSampleAllStatusProducts();
+        List<Product> searchResults = ProductController.adminProductSelectByName(keyword);
 
         if (searchResults.isEmpty()) {
             System.out.println("\n검색된 상품이 없습니다.");
@@ -382,7 +384,7 @@ public class AdminMenuView {
     private void listCategories() {
         // TODO: Controller 연동 - 카테고리 목록 조회
         // List<Category> categories = categoryController.getAllCategories();
-        List<Category> categories = getSampleCategories();
+        List<Category> categories = ProductController.categorySelectAll();
 
         System.out.println("\n════════════════════════════════════════");
         System.out.println("  📁  카테고리 목록");
@@ -426,6 +428,7 @@ public class AdminMenuView {
         if ("1".equals(confirm)) {
             // TODO: Controller 연동 - 카테고리 추가
             // adminController.addCategory(name);
+        	ProductController.categoryInsert(name);
             CommonView.printSuccessMessage("카테고리 등록 완료", "'" + name + "' 카테고리가 추가되었습니다.");
         } else if ("0".equals(confirm)) {
             System.out.println("\n카테고리 추가를 취소했습니다.");
@@ -441,7 +444,7 @@ public class AdminMenuView {
     private void updateCategory() {
         // TODO: Controller 연동 - 카테고리 목록 조회
         // List<Category> categories = categoryController.getAllCategories();
-        List<Category> categories = getSampleCategories();
+        List<Category> categories = ProductController.categorySelectAll();
 
         System.out.println("\n════════════════════════════════════════");
         System.out.println("           카테고리 수정");
@@ -463,9 +466,7 @@ public class AdminMenuView {
 
         try {
             int categoryId = Integer.parseInt(input);
-            // TODO: Controller 연동 - categoryId로 카테고리 상세 조회
-            // Category selectedCategory = adminController.getCategoryById(categoryId);
-            Category selectedCategory = getSampleCategoryById(categoryId);
+            Category selectedCategory = findCategoryById(categories, categoryId);
 
             if (selectedCategory == null) {
                 System.out.println("잘못된 카테고리 번호입니다.");
@@ -501,6 +502,7 @@ public class AdminMenuView {
             if ("1".equals(confirm)) {
                 // TODO: Controller 연동 - 카테고리 수정
                 // adminController.updateCategory(categoryId, newName);
+            	ProductController.categoryUpdate(selectedCategory);
                 CommonView.printSuccessMessage("카테고리 수정 완료", "'" + selectedCategory.getName() + "' → '" + newName + "'로 변경되었습니다.");
             } else if ("0".equals(confirm)) {
                 System.out.println("\n카테고리 수정을 취소했습니다.");
@@ -512,6 +514,21 @@ public class AdminMenuView {
             CommonView.printInvalidNumberMessage();
         }
     }
+    
+    /**
+     * ID로 카테고리 찾기
+     */
+    private Category findCategoryById(List<Category> categories, int categoryId) {
+        if (categories == null) {
+            return null;
+        }
+        for (Category category : categories) {
+            if (category.getCategoryId() == categoryId) {
+                return category;
+            }
+        }
+        return null;
+    }
 
     /**
      * 카테고리 삭제 (메뉴 10번)
@@ -520,7 +537,7 @@ public class AdminMenuView {
     private void deleteCategory() {
         // TODO: Controller 연동 - 카테고리 목록 조회
         // List<Category> categories = categoryController.getAllCategories();
-        List<Category> categories = getSampleCategories();
+        List<Category> categories = ProductController.categorySelectAll();
 
         System.out.println("\n════════════════════════════════════════");
         System.out.println("           카테고리 삭제");
@@ -541,15 +558,14 @@ public class AdminMenuView {
         }
 
         try {
-            int categoryId = Integer.parseInt(input);
-            // TODO: Controller 연동 - categoryId로 카테고리 상세 조회
-            // Category selectedCategory = adminController.getCategoryById(categoryId);
-            Category selectedCategory = getSampleCategoryById(categoryId);
+            int categoryId = Integer.parseInt(input);           
+            Category selectedCategory = findCategoryById(categories,categoryId);
 
+            /*//서비스에서 객체가 존재여부에 따라 예외처리 중
             if (selectedCategory == null) {
                 System.out.println("잘못된 카테고리 번호입니다.");
                 return;
-            }
+            }*/
 
             System.out.println("\n════════════════════════════════════════");
             System.out.println("  ⚠  카테고리 삭제 확인");
@@ -564,6 +580,7 @@ public class AdminMenuView {
             if ("1".equals(confirm)) {
                 // TODO: Controller 연동 - 카테고리 삭제
                 // adminController.deleteCategory(categoryId);
+            	ProductController.categoryDelete(categoryId);
                 CommonView.printSuccessMessage("카테고리 삭제 완료", "'" + selectedCategory.getName() + "' 카테고리가 삭제되었습니다.");
             } else if ("0".equals(confirm)) {
                 System.out.println("\n카테고리 삭제를 취소했습니다.");

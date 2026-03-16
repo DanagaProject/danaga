@@ -28,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
 		
 		// is_deleted = 'n' AND status_id = 10 필터링 추가
 	    list = list.stream()
-	               .filter(p -> p.getIsDeleted().equals("n") && p.getStatusId() == 10)
+	               .filter(p -> p.getIsDeleted().equalsIgnoreCase("n") && p.getStatusId() == 10)
 	               .collect(Collectors.toList());
 	    
 		if(list.isEmpty())
@@ -48,7 +48,7 @@ public class ProductServiceImpl implements ProductService {
 	    List<Product> list = productDAO.productSelectByCategory(categoryId);
 	    
 	    list = list.stream()
-	               .filter(p -> p.getIsDeleted().equals("n") && p.getStatusId() == 10)
+	               .filter(p -> p.getIsDeleted().equalsIgnoreCase("n") && p.getStatusId() == 10)
 	               .collect(Collectors.toList());
 	    
 	    if (list.isEmpty())
@@ -67,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
 		List<Product> list = productDAO.productSelectByName(keyword);
 		
 		list = list.stream()
-	               .filter(p -> p.getIsDeleted().equals("n") && p.getStatusId() == 10)
+	               .filter(p -> p.getIsDeleted().equalsIgnoreCase("n") && p.getStatusId() == 10)
 	               .collect(Collectors.toList());
 		
 		if(list.isEmpty()) 
@@ -75,22 +75,7 @@ public class ProductServiceImpl implements ProductService {
 		return list;
 	}
 	
-	///////////////////////////////////////////////////////////////////
-	@Override
-	public List<Product> productSelectBySellerOnSale() throws ProductNotFoundException, DatabaseException{		
-		String sellerId = SessionManager.getCurrentUserId();
-		
-		List<Product> list = productDAO.productSelectBySellerId(sellerId);
-	    //on_sale인 것만 가져오기
-		list = list.stream()
-			       .filter(p -> p.getIsDeleted().equals("n") && p.getStatusId() == 10)
-	               .collect(Collectors.toList());
-	    
-		if(list.isEmpty()) 
-			throw new ProductNotFoundException("판매 물품 중인 없습니다.");
-		return list;
-	}
-	
+	///////////////////////////////////////////////////////////////////	
 	@Override
 	public List<Product> productSelectBySellerAll() throws ProductNotFoundException, DatabaseException{		
 		String sellerId = SessionManager.getCurrentUserId();
@@ -98,7 +83,7 @@ public class ProductServiceImpl implements ProductService {
 		List<Product> list = productDAO.productSelectBySellerId(sellerId);
 		
 		list = list.stream()
-		           .filter(p -> p.getIsDeleted().equals("n"))
+		           .filter(p -> p.getIsDeleted().equalsIgnoreCase("n"))
 		           .collect(Collectors.toList());
 		
 		if(list.isEmpty()) 
@@ -115,7 +100,7 @@ public class ProductServiceImpl implements ProductService {
 		try {
 			List<Product> myProducts = productDAO.productSelectBySellerId(product.getSellerId());
 		    boolean isDuplicate = myProducts.stream()
-		    	.filter(p -> p.getIsDeleted().equals("n"))
+		    	.filter(p -> p.getIsDeleted().equalsIgnoreCase("n"))
 		    	.anyMatch(p ->
 		            p.getCategoryId() == product.getCategoryId() &&
 		            p.getTitle().equals(product.getTitle()) &&
@@ -148,7 +133,7 @@ public class ProductServiceImpl implements ProductService {
 	    
 	    Product existing = productDAO.productSelectById(product.getProductId());
 	    
-	    if (existing.getIsDeleted().equals("y"))
+	    if (existing.getIsDeleted().equalsIgnoreCase("y"))
 	        throw new ProductNotFoundException("삭제된 상품입니다.");
 	    if (existing.getStatusId() != 10)
 	        throw new ProductNotFoundException("판매 중인 상품만 수정할 수 있습니다.")
@@ -163,7 +148,7 @@ public class ProductServiceImpl implements ProductService {
 	public int productDelete(int productId) throws ProductNotFoundException, DatabaseException {
 	    Product existing = productDAO.productSelectById(productId);
 	    
-	    if (existing.getIsDeleted().equals("y"))
+	    if (existing.getIsDeleted().equalsIgnoreCase("y"))
 	        throw new ProductNotFoundException("이미 삭제된 상품입니다.");
 	    if (existing.getStatusId() != 10)
 	        throw new ProductNotFoundException("판매 중인 상품만 삭제할 수 있습니다.");
