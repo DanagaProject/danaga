@@ -3,8 +3,8 @@ package dao;
 import java.util.List;
 
 import dto.Category;
+import dto.FavoriteCategory;
 import dto.Product;
-import dto.User;
 import exception.CategoryNotFoundException;
 import exception.DatabaseException;
 import exception.ProductNotFoundException;
@@ -14,19 +14,29 @@ import exception.ProductNotFoundException;
  * */
 public interface ProductDAO {
 	/**
-	 * 전체 상품
+	 * 전체 상품 조회
 	 * */
-	List<Product> productSelectAll() throws ProductNotFoundException;
+	List<Product> productSelectAll() throws ProductNotFoundException, DatabaseException;
 
 	/**
-	 * 카테고리별 상품
+	 * 카테고리별 상품 조회
 	 * */
-	List<Product> productSelectByCategory(int categoryId) throws ProductNotFoundException;
+	List<Product> productSelectByCategory(int categoryId) throws ProductNotFoundException, DatabaseException;
 	
 	/**
-	 * 상품명으로 상품 가져오기
+	 * 상품명으로 상품 조회
 	 * */
-	Product productSelectByName(String keyword) throws ProductNotFoundException;
+	List<Product> productSelectByName(String keyword) throws ProductNotFoundException, DatabaseException;
+	
+	/**
+	 * 로그인 중인 userId의 상품 조회
+	 * */
+	List<Product> productSelectBySellerId(String sellerId) throws ProductNotFoundException, DatabaseException;
+	
+	/**
+	 * 상품 Id로 상품 조회
+	 * */
+	Product productSelectById(int productId) throws ProductNotFoundException, DatabaseException;	
 	
 	/**
 	 * 상품 등록
@@ -39,9 +49,15 @@ public interface ProductDAO {
 	int productUpdate(Product product) throws ProductNotFoundException;
 	
 	/**
-	 * 상품 삭제
+	 * 상품 삭제(is_deleted)
 	 * */
 	int productDelete(int productId) throws ProductNotFoundException;
+	
+	/**
+	 * 추가 기능
+	 * 상품 찜하기
+	 * */
+	
 	
 	/**
 	 * 카테고리 조회
@@ -51,27 +67,31 @@ public interface ProductDAO {
 	/**
 	 * 카테고리 추가
 	 * */
-	int categoryInsert(Product product) throws DatabaseException;
+	int categoryInsert(String name) throws DatabaseException;
 	
 	/**
-	 * 카테고리 삭제
+	 * 카테고리 수정 
+	 * */
+	int categoryUpdate(Category category) throws CategoryNotFoundException;
+	
+	/**
+	 * 카테고리 삭제(delete)
 	 * */
 	int categoryDelete(int categoryId) throws CategoryNotFoundException;
 	
 	/**
-	 * 즐겨찾기 카테고리 조회
+	 * 선호 카테고리 조회
 	 * */
-	List<Category> favCategorySeletAll() throws CategoryNotFoundException;
+	List<FavoriteCategory> favCategorySeletAllByUser(String currentUserId) throws CategoryNotFoundException, DatabaseException;
 	
 	/**
-	 * 즐겨찾기 카테고리 추가
+	 * 선호 카테고리 추가
 	 * */
-	int favCategoryUpdate(User currentUser) throws CategoryNotFoundException;
-	
+	int favCategoryInsert(String currentUserId, int categoryId) throws DatabaseException;
 	
 	/**
-	 * 즐겨찾기 카테고리 삭제
+	 * 선호 카테고리 삭제(delete)
 	 * */
-	int favCategoryDelete(User currentUser) throws CategoryNotFoundException;
+	int favCategoryDelete(String currentUserId, int cateogryId) throws CategoryNotFoundException;
 	
 }
