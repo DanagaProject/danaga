@@ -1402,11 +1402,11 @@ public class MyPageView {
     private List<Notification> getSampleNotifications() {
         List<Notification> list = new ArrayList<>();
         list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", false, "2024-03-10"));
+                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", "0", "2024-03-10"));
         list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", false, "2024-03-09"));
+                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", "0", "2024-03-09"));
         list.add(new Notification(3, SessionManager.getCurrentUserId(),
-                "[시스템] 다나가에 오신 것을 환영합니다!", true, "2024-03-01"));
+                "[시스템] 다나가에 오신 것을 환영합니다!", "1", "2024-03-01"));
         return list;
     }
 
@@ -1417,9 +1417,9 @@ public class MyPageView {
     private List<Notification> getSampleUnreadNotifications() {
         List<Notification> list = new ArrayList<>();
         list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", false, "2024-03-10"));
+                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", "0", "2024-03-10"));
         list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", false, "2024-03-09"));
+                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", "0", "2024-03-09"));
         return list;
     }
 

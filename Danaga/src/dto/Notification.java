@@ -7,7 +7,7 @@ public class Notification {
     private int notificationId;
     private String userId;
     private String message;
-    private boolean isRead;
+    private String isRead; // '0': 안읽음, '1': 읽음
     private String createdAt;
 
     // 기본 생성자
@@ -18,12 +18,12 @@ public class Notification {
     public Notification(String userId, String message) {
         this.userId = userId;
         this.message = message;
-        this.isRead = false;
+        this.isRead = "0"; // 기본값: 안읽음
     }
 
     // 전체 필드 생성자
     public Notification(int notificationId, String userId, String message,
-                        boolean isRead, String createdAt) {
+                        String isRead, String createdAt) {
         this.notificationId = notificationId;
         this.userId = userId;
         this.message = message;
@@ -56,12 +56,12 @@ public class Notification {
         this.message = message;
     }
 
-    public boolean isRead() {
+    public String getIsRead() {
         return isRead;
     }
 
-    public void setRead(boolean read) {
-        isRead = read;
+    public void setIsRead(String isRead) {
+        this.isRead = isRead;
     }
 
     public String getCreatedAt() {
