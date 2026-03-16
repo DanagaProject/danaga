@@ -16,7 +16,13 @@ public class Orders {
     private String buyerId;
     private int statusId; // DB 실제 컬럼
     private String createdAt;
-
+    private String updatedAt;
+    
+    // View 가공용 추가 변수
+    private String formattedDate;
+    private String guideMessage;
+    // DAO 조인 쿼리에서 가져올 상태 이름
+    private String statusName;
     // JOIN용 추가 필드
     private String productTitle;
     private int productPrice;
@@ -37,13 +43,17 @@ public class Orders {
     // 전체 필드 생성자
 
 
-    public Orders(int ordersId, int productId, String buyerId, int statusId, String createdAt) {
+    public Orders(int ordersId, int productId, String buyerId, int statusId, String createdAt, String updatedAt) {
 
         this.ordersId = ordersId;
         this.productId = productId;
         this.buyerId = buyerId;
         this.statusId = statusId;
         this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+    public Orders(int ordersId, int productId, String buyerId, int statusId, String createdAt ) {
+    	this(ordersId, productId, buyerId, statusId, createdAt, null);
     }
 
     // Getters and Setters
@@ -87,7 +97,15 @@ public class Orders {
         this.createdAt = createdAt;
     }
 
-    public String getProductTitle() {
+    public String getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(String updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public String getProductTitle() {
         return productTitle;
     }
 
@@ -118,14 +136,34 @@ public class Orders {
     public void setStatus(String status) {
         this.status = status;
     }
+    
+    public String getFormattedDate() {
+        return formattedDate;
+    }
 
+    public void setFormattedDate(String formattedDate) {
+        this.formattedDate = formattedDate;
+    }
+
+    public String getGuideMessage() {
+        return guideMessage;
+    }
+
+    public void setGuideMessage(String guideMessage) {
+        this.guideMessage = guideMessage;
+    }
+
+    public String getStatusName() {
+        return statusName;
+    }
+
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
+    }
 
 	@Override
 	public String toString() {
 		return "Orders [ordersId=" + ordersId + ", productId=" + productId + ", buyerId=" + buyerId + ", statusId="
-				+ statusId + ", createdAt=" + createdAt + ", status=" + status + "]";
+				+ statusId + ", createdAt=" + createdAt + ", updatedAt="+ updatedAt + ", status=" + status + "]";
 	}
-
-  
-
 }

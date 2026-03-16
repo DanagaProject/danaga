@@ -50,9 +50,9 @@ public class AdminMenuView {
             System.out.println("  6.  회원 목록 / 차단 관리");
             System.out.println("════════════════════════════════════════");
             System.out.println("  [카테고리 관리]");
-            System.out.println("  7. 목록  8. 추가  9. 삭제");
+            System.out.println("  7. 목록  8. 추가  9. 수정  10. 삭제");
             System.out.println("════════════════════════════════════════");
-            System.out.println("  10. 알림 확인    11. 로그아웃");
+            System.out.println("  11. 알림 확인    12. 로그아웃");
             System.out.println("════════════════════════════════════════");
             System.out.print("  선택 > ");
 
@@ -84,12 +84,15 @@ public class AdminMenuView {
                     addCategory();
                     break;
                 case "9":
-                    deleteCategory();
+                    updateCategory();
                     break;
                 case "10":
-                    viewNotifications();
+                    deleteCategory();
                     break;
                 case "11":
+                    viewNotifications();
+                    break;
+                case "12":
                     System.out.println("\n로그아웃 되었습니다.");
                     SessionManager.logout();
                     return; // 메인 메뉴로 돌아감
@@ -432,7 +435,86 @@ public class AdminMenuView {
     }
 
     /**
-     * 카테고리 삭제 (메뉴 9번)
+     * 카테고리 수정 (메뉴 9번)
+     * - categoryId를 직접 입력하여 선택 후 이름 수정
+     */
+    private void updateCategory() {
+        // TODO: Controller 연동 - 카테고리 목록 조회
+        // List<Category> categories = categoryController.getAllCategories();
+        List<Category> categories = getSampleCategories();
+
+        System.out.println("\n════════════════════════════════════════");
+        System.out.println("           카테고리 수정");
+        System.out.println("════════════════════════════════════════");
+        System.out.println("  수정할 카테고리 번호를 입력하세요.");
+        System.out.println();
+        for (Category c : categories) {
+            System.out.println("  [" + c.getCategoryId() + "]  " + c.getName());
+        }
+        System.out.println("════════════════════════════════════════");
+        System.out.println("  0. 취소");
+        System.out.println("════════════════════════════════════════");
+        System.out.print("  선택 > ");
+        String input = sc.nextLine().trim();
+
+        if ("0".equals(input)) {
+            return;
+        }
+
+        try {
+            int categoryId = Integer.parseInt(input);
+            // TODO: Controller 연동 - categoryId로 카테고리 상세 조회
+            // Category selectedCategory = adminController.getCategoryById(categoryId);
+            Category selectedCategory = getSampleCategoryById(categoryId);
+
+            if (selectedCategory == null) {
+                System.out.println("잘못된 카테고리 번호입니다.");
+                return;
+            }
+
+            System.out.println("\n════════════════════════════════════════");
+            System.out.println("  현재 카테고리 이름  :  " + selectedCategory.getName());
+            System.out.println("════════════════════════════════════════");
+            System.out.print("  새로운 카테고리 이름 입력 (0: 취소) > ");
+            String newName = sc.nextLine().trim();
+
+            if ("0".equals(newName)) {
+                return;
+            }
+
+            if (newName.isEmpty()) {
+                System.out.println("카테고리 이름을 입력해주세요.");
+                return;
+            }
+
+            System.out.println("\n════════════════════════════════════════");
+            System.out.println("  ⚠  카테고리 수정 확인");
+            System.out.println("════════════════════════════════════════");
+            System.out.println("  기존 이름  :  " + selectedCategory.getName());
+            System.out.println("  새 이름    :  " + newName);
+            System.out.println("════════════════════════════════════════");
+            System.out.println("  1. 확인    0. 취소");
+            System.out.println("════════════════════════════════════════");
+            System.out.print("  선택 > ");
+            String confirm = sc.nextLine().trim();
+
+            if ("1".equals(confirm)) {
+                // TODO: Controller 연동 - 카테고리 수정
+                // adminController.updateCategory(categoryId, newName);
+                CommonView.printSuccessMessage("카테고리 수정 완료", "'" + selectedCategory.getName() + "' → '" + newName + "'로 변경되었습니다.");
+            } else if ("0".equals(confirm)) {
+                System.out.println("\n카테고리 수정을 취소했습니다.");
+            } else {
+                CommonView.printInvalidInputMessage();
+            }
+
+        } catch (NumberFormatException e) {
+            CommonView.printInvalidNumberMessage();
+        }
+    }
+
+    /**
+     * 카테고리 삭제 (메뉴 10번)
      * - categoryId를 직접 입력하여 선택
      */
     private void deleteCategory() {
@@ -649,11 +731,7 @@ public class AdminMenuView {
         categories.add(new Category(3, "모니터"));
         categories.add(new Category(4, "키보드"));
         categories.add(new Category(5, "마우스"));
-        categories.add(new Category(6, "CPU"));
-        categories.add(new Category(7, "GPU"));
-        categories.add(new Category(8, "RAM"));
-        categories.add(new Category(9, "저장장치"));
-        categories.add(new Category(10, "기타"));
+        categories.add(new Category(6, "기타"));
         return categories;
     }
 
@@ -663,11 +741,11 @@ public class AdminMenuView {
     private List<Notification> getSampleNotifications() {
         List<Notification> list = new ArrayList<>();
         list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[관리자] 취소요청 1건이 접수되었습니다.", false, "2024-03-15"));
+                "[관리자] 취소요청 1건이 접수되었습니다.", "0", "2024-03-15"));
         list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[관리자] 신규 회원가입 2건이 확인되었습니다.", false, "2024-03-14"));
+                "[관리자] 신규 회원가입 2건이 확인되었습니다.", "0", "2024-03-14"));
         list.add(new Notification(3, SessionManager.getCurrentUserId(),
-                "[시스템] 관리자 로그인 알림.", true, "2024-03-01"));
+                "[시스템] 관리자 로그인 알림.", "1", "2024-03-01"));
         return list;
     }
 
@@ -677,9 +755,9 @@ public class AdminMenuView {
     private List<Notification> getSampleUnreadNotifications() {
         List<Notification> list = new ArrayList<>();
         list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[관리자] 취소요청 1건이 접수되었습니다.", false, "2024-03-15"));
+                "[관리자] 취소요청 1건이 접수되었습니다.", "0", "2024-03-15"));
         list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[관리자] 신규 회원가입 2건이 확인되었습니다.", false, "2024-03-14"));
+                "[관리자] 신규 회원가입 2건이 확인되었습니다.", "0", "2024-03-14"));
         return list;
     }
 

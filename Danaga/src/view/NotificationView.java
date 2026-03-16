@@ -26,7 +26,7 @@ public class NotificationView {
             System.out.println("  알림이 없습니다.");
         } else {
             for (Notification n : notifications) {
-                String readMark = n.isRead() ? "읽음  " : "안읽음";
+                String readMark = "1".equals(n.getIsRead()) ? "읽음  " : "안읽음";
                 String createdAt = n.getCreatedAt() != null ? n.getCreatedAt() : "";
                 System.out.printf("  [%d] %s  %s  %s%n",
                         n.getNotificationId(), readMark, createdAt, n.getMessage());
