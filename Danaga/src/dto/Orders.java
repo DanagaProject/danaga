@@ -35,7 +35,10 @@ public class Orders {
     }
 
     // 전체 필드 생성자
+
+
     public Orders(int ordersId, int productId, String buyerId, int statusId, String createdAt) {
+
         this.ordersId = ordersId;
         this.productId = productId;
         this.buyerId = buyerId;
@@ -116,15 +119,13 @@ public class Orders {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "Order{" +
-                "ordersId=" + ordersId +
-                ", productTitle='" + productTitle + '\'' +
-                ", productPrice=" + productPrice +
-                ", statusId=" + statusId +
-                ", status='" + status + '\'' +
-                ", createdAt='" + createdAt + '\'' +
-                '}';
-    }
+
+	@Override
+	public String toString() {
+		return "Orders [ordersId=" + ordersId + ", productId=" + productId + ", buyerId=" + buyerId + ", statusId="
+				+ statusId + ", createdAt=" + createdAt + ", status=" + status + "]";
+	}
+
+  
+
 }

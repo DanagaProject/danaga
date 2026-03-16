@@ -21,7 +21,7 @@ public class DBUtil {
     // static 초기화 블록: 클래스 로딩 시 db.properties 읽기
     static {
         try (InputStream input = DBUtil.class.getClassLoader()
-                .getResourceAsStream("config/db.properties")) {
+                .getResourceAsStream("util/config/db.properties")) {
 
             if (input == null) {
                 throw new IOException("db.properties 파일을 찾을 수 없습니다.");
