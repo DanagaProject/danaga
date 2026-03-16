@@ -53,7 +53,8 @@ public class ProductDAOImpl implements ProductDAO {
 						rs.getString("description"), 
 						conditionId, 
 						statusId, 
-						rs.getString("created_at"));
+						rs.getString("created_at"),
+						rs.getString("is_deleted"));
 				
 				//이름 가져오기
 				String categoryName = this.categoryNameSelect(con, categoryId);
@@ -103,7 +104,8 @@ public class ProductDAOImpl implements ProductDAO {
 						rs.getString("description"), 
 						conditionId, 
 						statusId, 
-						rs.getString("created_at"));
+						rs.getString("created_at"),
+						rs.getString("is_deleted"));
 				
 				//이름 가져오기
 				String categoryName = this.categoryNameSelect(con, categoryId);
@@ -155,7 +157,8 @@ public class ProductDAOImpl implements ProductDAO {
 						rs.getString("description"), 
 						conditionId, 
 						statusId, 
-						rs.getString("created_at"));
+						rs.getString("created_at"),
+						rs.getString("is_deleted"));
 				
 				//이름 가져오기
 				String categoryName = this.categoryNameSelect(con, categoryId);
@@ -207,7 +210,8 @@ public class ProductDAOImpl implements ProductDAO {
 						rs.getString("description"), 
 						conditionId, 
 						statusId, 
-						rs.getString("created_at"));
+						rs.getString("created_at"),
+						rs.getString("is_deleted"));
 				
 				//이름 가져오기
 				String categoryName = this.categoryNameSelect(con, categoryId);
@@ -259,7 +263,8 @@ public class ProductDAOImpl implements ProductDAO {
 						rs.getString("description"), 
 						conditionId, 
 						statusId, 
-						rs.getString("created_at"));
+						rs.getString("created_at"),
+						rs.getString("is_deleted"));
 				
 				//이름 가져오기
 				String categoryName = this.categoryNameSelect(con, categoryId);
