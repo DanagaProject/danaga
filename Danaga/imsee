@@ -1,0 +1,69 @@
+@Override
+	public int ordersInsert(Orders order) throws SQLException {
+	    Connection con = null;
+	    PreparedStatement ps = null;
+	    ResultSet rs = null;
+	    
+	   
+	    String sql = "INSERT INTO orders (product_id, buyer_id, status_id) VALUES (?, ?, 4)";
+	    int result = 0;
+
+	    try {
+	        con = DBUtil.getConnection();
+	        con.setAutoCommit(false);
+
+	        
+	        int price = this.selectProductPrice(con, order.getProductId());
+	        int balance = this.selectUserBalance(con, order.getBuyerId());
+
+	        if (balance < price) {
+	            throw new SQLException("잔액이 부족합니다. (현재 잔액: " + balance + "원)");
+	        }
+
+	        
+	        this.updateUserBalance(con, order.getBuyerId(), -price);
+	        this.updateUserBalance(con, "admin", price);
+	       
+	        ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+	        ps.setInt(1, order.getProductId());
+	        ps.setString(2, order.getBuyerId());
+
+	        result = ps.executeUpdate();
+
+	        if (result == 0) {
+	            con.rollback();
+	            throw new SQLException("주문 등록에 실패했습니다.");
+	        } else {
+	            
+	            rs = ps.getGeneratedKeys();
+	            int orderId = -1;
+	            if (rs.next()) {
+	                orderId = rs.getInt(1);
+	            }
+	            System.out.println("생성된 orderId = " + orderId);
+
+	            
+	            this.updateProductStatus(con, order.getProductId(), 11);
+
+	            
+	            this.insertNotification(con, order.getBuyerId(), "상품 구매 신청이 완료되었습니다.");
+
+	            con.commit(); 
+	        }
+
+	    } catch (SQLException e) {
+	        if (con != null) {
+	            try {
+	                con.rollback();
+	            } catch (SQLException ex) {
+	                ex.printStackTrace();
+	            }
+	        }
+	        throw e;
+	    } finally {
+	        // 자원 해제
+	        DBUtil.close(con, ps, rs);
+	    }
+
+	    return result;
+	}
