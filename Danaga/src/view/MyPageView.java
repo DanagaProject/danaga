@@ -1,16 +1,18 @@
 package view;
 
-import controller.CodeController;
-import dto.Category;
-import dto.Code;
-import dto.Notification;
-import dto.Orders;
-import dto.Product;
-import service.CodeService;
-import util.SessionManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
+import controller.CodeController;
+import controller.ProductController;
+import dto.Category;
+import dto.Code;
+import dto.FavoriteCategory;
+import dto.Notification;
+import dto.Orders;
+import dto.Product;
+import util.SessionManager;
 
 /**
  * 마이페이지 View (SCR-010)
@@ -613,11 +615,20 @@ public class MyPageView {
      */
     private void manageMyProducts() {
         while (true) {
-            // 샘플 데이터 가져오기 (추후 Controller를 통해 실제 데이터 조회)
-            List<Product> onSaleProducts = getSampleProductsByStatus("ON_SALE");
-            List<Product> reservedProducts = getSampleProductsByStatus("RESERVED");
-            List<Product> completedProducts = getSampleProductsByStatus("COMPLETED");
-
+            // 샘플 데이터 가져오기 (추후 Controller를 통해 실제 데이터 조회)       
+        	List<Product> allProducts = ProductController.productSelectBySellerAll();
+        	List<Product> onSaleProducts = new ArrayList<>();
+        	List<Product> reservedProducts = new ArrayList<>();
+        	List<Product> completedProducts = new ArrayList<>();
+ 
+        	for (Product p : allProducts) {
+        	    switch (p.getStatusId()) {
+        	        case 10 -> onSaleProducts.add(p);
+        	        case 11 -> reservedProducts.add(p);
+        	        case 14 -> completedProducts.add(p);
+        	    }
+        	}
+        	
             // SaleView를 사용하여 상품 관리 화면 출력
             SaleView.printProductManagement(onSaleProducts, reservedProducts, completedProducts);
 
@@ -661,10 +672,10 @@ public class MyPageView {
     private Product selectProductToUpdate(List<Product> onSaleProducts) {
         SaleView.printUpdateProductHeader();
 
-        if (onSaleProducts == null || onSaleProducts.isEmpty()) {
+        /*if (onSaleProducts == null || onSaleProducts.isEmpty()) {
             System.out.println("수정 가능한 상품이 없습니다.");
             return null;
-        }
+        }*/
 
         for (Product product : onSaleProducts) {
             System.out.println("[" + product.getProductId() + "]  " +
@@ -704,7 +715,7 @@ public class MyPageView {
 
             if ("0".equals(choice)) {
                 if (confirmProductUpdate(originalProduct, updatedProduct)) {
-                    System.out.println("\n[TODO] 상품 수정 처리 - Controller/Service 연동 예정");
+                    ProductController.productUpdate(updatedProduct);
                     CommonView.printSuccessMessage("상품 수정 완료");
                 } else {
                     System.out.println("\n수정을 취소했습니다.");
@@ -813,7 +824,7 @@ public class MyPageView {
      */
     private void updateProductCategory(Product product) {
         // 카테고리 목록 조회 (추후 DAO에서 조회)
-        List<Category> categories = getSampleCategories();
+        List<Category> categories = ProductController.categorySelectAll();
 
         ProductView.printCategoryList(categories);
         String catInput = sc.nextLine().trim();
@@ -918,8 +929,8 @@ public class MyPageView {
             }
         }
         return null;
-    }
-
+    }   
+    
     /**
      * 상품 삭제
      */
@@ -927,11 +938,11 @@ public class MyPageView {
         SaleView.printDeleteProductHeader();
 
         // ON_SALE 상태인 상품만 표시
-        if (onSaleProducts == null || onSaleProducts.isEmpty()) {
+        /*if (onSaleProducts == null || onSaleProducts.isEmpty()) {
             System.out.println("삭제 가능한 상품이 없습니다.");
             CommonView.pauseScreen(sc);
             return;
-        }
+        }*/
 
         for (Product product : onSaleProducts) {
             System.out.println("[" + product.getProductId() + "]  " +
@@ -955,7 +966,7 @@ public class MyPageView {
                 String confirm = sc.nextLine().trim();
 
                 if ("1".equals(confirm)) {
-                    System.out.println("\n[TODO] 상품 삭제 처리 - Controller/Service 연동 예정");
+                    ProductController.productDelete(productId);
                     CommonView.printSuccessMessage("상품 삭제 완료");
                     CommonView.pauseScreen(sc);
                 } else if ("0".equals(confirm)) {
@@ -976,7 +987,7 @@ public class MyPageView {
      */
     private void viewAllProductHistory() {
         // 샘플 데이터 가져오기 (추후 Controller를 통해 실제 데이터 조회)
-        List<Product> allProducts = getSampleAllProducts();
+        List<Product> allProducts = ProductController.productSelectBySellerAll();
 
         // SaleView를 사용하여 전체 상품 이력 출력
         SaleView.printAllProductHistory(allProducts);
@@ -1031,7 +1042,7 @@ public class MyPageView {
         if (newProduct == null) {
             return; // 취소
         }
-
+        
         // 등록 확인
         if (confirmProductRegistration(newProduct)) {
             System.out.println("\n[TODO] 상품 등록 처리 - Controller/Service 연동 예정");
@@ -1060,7 +1071,7 @@ public class MyPageView {
 
         // 4. 카테고리 입력
         // 카테고리 목록 조회 (추후 DAO에서 조회)
-    	List<Category> categories = getSampleCategories();
+    	List<Category> categories = ProductController.categorySelectAll();
     	
     	Category category = inputProductCategoryId(categories);
         if (category == null) return null;
@@ -1203,8 +1214,9 @@ public class MyPageView {
         while (true) {
             SaleView.printRegisterProductConfirm(product);
             String confirm = sc.nextLine().trim();
-
+            
             if ("1".equals(confirm)) {
+            	ProductController.productInsert(product);
                 return true;
             } else if ("0".equals(confirm)) {
                 return false;
@@ -1218,14 +1230,11 @@ public class MyPageView {
     /**
      * 즐겨찾기 카테고리 관리
      */
-    /**
-     * 즐겨찾기 카테고리 관리
-     */
     private void manageFavorites() {
         while (true) {
             // TODO: Controller 연동 - 즐겨찾기 목록 조회
             // List<Category> favoriteCategories = favoriteController.getFavoriteCategories(SessionManager.getCurrentUserId());
-            List<Category> favoriteCategories = getSampleFavoriteCategories();
+            List<FavoriteCategory> favoriteCategories = ProductController.favCategorySelectAll();
 
             FavoriteView.printFavoriteManagement(favoriteCategories);
             String menu = sc.nextLine().trim();
@@ -1253,7 +1262,7 @@ public class MyPageView {
 
         // TODO: Controller 연동 - 전체 카테고리 조회
         // List<Category> allCategories = categoryController.getAllCategories();
-        List<Category> allCategories = getSampleCategories();
+        List<Category> allCategories = ProductController.categorySelectAll();
 
         ProductView.printCategoryList(allCategories);
         String input = sc.nextLine().trim();
@@ -1264,16 +1273,14 @@ public class MyPageView {
 
         try {
             int categoryId = Integer.parseInt(input);
-            Category selectedCategory = findCategoryById(allCategories, categoryId);
+            FavoriteCategory selectedCategory = findFavoriteCategoryFromCategories(allCategories, categoryId);
 
             if (selectedCategory == null) {
                 System.out.println("잘못된 카테고리 번호입니다.");
                 return;
             }
 
-            // TODO: Controller 연동 - 즐겨찾기 추가 (중복 확인 포함)
-            // favoriteController.addFavorite(SessionManager.getCurrentUserId(), categoryId);
-
+            ProductController.favCategoryInsert(categoryId);
             FavoriteView.printAddFavoriteSuccess(selectedCategory);
 
         } catch (NumberFormatException e) {
@@ -1288,7 +1295,7 @@ public class MyPageView {
         while (true) {
             // TODO: Controller 연동 - 즐겨찾기 목록 조회
             // List<Category> favorites = favoriteController.getFavoriteCategories(SessionManager.getCurrentUserId());
-            List<Category> favorites = getSampleFavoriteCategories();
+            List<FavoriteCategory> favorites = ProductController.favCategorySelectAll();
 
             FavoriteView.printRemoveFavoriteList(favorites);
             String input = sc.nextLine().trim();
@@ -1297,13 +1304,13 @@ public class MyPageView {
                 return;
             }
 
-            if (favorites == null || favorites.isEmpty()) {
+            /*if (favorites == null || favorites.isEmpty()) {
                 return;
-            }
+            }*/
 
             try {
                 int categoryId = Integer.parseInt(input);
-                Category selectedCategory = findCategoryById(favorites, categoryId);
+                FavoriteCategory selectedCategory = findFavoriteCategoryFromFavorites(favorites, categoryId);
 
                 if (selectedCategory == null) {
                     System.out.println("잘못된 번호입니다.");
@@ -1316,6 +1323,7 @@ public class MyPageView {
                 if ("1".equals(confirm)) {
                     // TODO: Controller 연동 - 즐겨찾기 삭제
                     // favoriteController.removeFavorite(SessionManager.getCurrentUserId(), categoryId);
+                	ProductController.favCategoryDelete(categoryId);
                     FavoriteView.printRemoveFavoriteSuccess(selectedCategory);
                     return;
                 } else if ("0".equals(confirm)) {
@@ -1330,6 +1338,37 @@ public class MyPageView {
             }
         }
     }
+
+    /**
+     * List<FavoriteCategory>에서 탐색 (addFavoriteCategory용)
+     * */
+    private FavoriteCategory findFavoriteCategoryFromCategories(List<Category> categories, int categoryId) {
+    	if (categories == null) {
+            return null;
+        }
+        for (Category category : categories) {
+        	if(category.getCategoryId() == categoryId) {
+        		FavoriteCategory favCategory = new FavoriteCategory();
+        		favCategory.setCategoryId(category.getCategoryId());
+        		favCategory.setCategoryName(category.getName());
+            return favCategory;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * List<FavoriteCategory>에서 탐색 (removeFavoriteCategory용)
+     * */
+    private FavoriteCategory findFavoriteCategoryFromFavorites(List<FavoriteCategory> favorites, int categoryId) {
+        for (FavoriteCategory fc : favorites) {
+            if (fc.getCategoryId() == categoryId) {
+                return fc;
+            }
+        }
+        return null;
+    }
+    
 
     /**
      * 즐겨찾기 카테고리 샘플 데이터 (View 테스트용)
@@ -1402,11 +1441,11 @@ public class MyPageView {
     private List<Notification> getSampleNotifications() {
         List<Notification> list = new ArrayList<>();
         list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", false, "2024-03-10"));
+                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", "0", "2024-03-10"));
         list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", false, "2024-03-09"));
+                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", "0", "2024-03-09"));
         list.add(new Notification(3, SessionManager.getCurrentUserId(),
-                "[시스템] 다나가에 오신 것을 환영합니다!", true, "2024-03-01"));
+                "[시스템] 다나가에 오신 것을 환영합니다!", "1", "2024-03-01"));
         return list;
     }
 
@@ -1417,9 +1456,9 @@ public class MyPageView {
     private List<Notification> getSampleUnreadNotifications() {
         List<Notification> list = new ArrayList<>();
         list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", false, "2024-03-10"));
+                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", "0", "2024-03-10"));
         list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", false, "2024-03-09"));
+                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", "0", "2024-03-09"));
         return list;
     }
 

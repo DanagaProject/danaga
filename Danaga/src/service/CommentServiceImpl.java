@@ -33,4 +33,20 @@ public class CommentServiceImpl implements CommentService {
             throw new DatabaseException("댓글 등록에 실패했습니다.");
         }
     }
+
+    @Override
+    public void updateComment(Comment comment) throws DatabaseException {
+        int result = commentDAO.updateComment(comment);
+        if (result == 0) {
+            throw new DatabaseException("댓글 수정에 실패했습니다.");
+        }
+    }
+
+    @Override
+    public void deleteComment(int commentId) throws DatabaseException {
+        int result = commentDAO.deleteComment(commentId);
+        if (result == 0) {
+            throw new DatabaseException("댓글 삭제에 실패했습니다.");
+        }
+    }
 }

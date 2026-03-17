@@ -66,4 +66,41 @@ public class CommentDAOImpl implements CommentDAO {
             DBUtil.close(con, ps);
         }
     }
+
+    @Override
+    public int updateComment(Comment comment) throws DatabaseException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        String sql = "UPDATE comments SET content = ?, updated_at = NOW() WHERE comment_id = ?";
+
+        try {
+            con = DBUtil.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setString(1, comment.getContent());
+            ps.setInt(2, comment.getCommentId());
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("댓글 수정 중 오류 발생: " + e.getMessage());
+        } finally {
+            DBUtil.close(con, ps);
+        }
+    }
+
+    @Override
+    public int deleteComment(int commentId) throws DatabaseException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        String sql = "DELETE FROM comments WHERE comment_id = ?";
+
+        try {
+            con = DBUtil.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, commentId);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("댓글 삭제 중 오류 발생: " + e.getMessage());
+        } finally {
+            DBUtil.close(con, ps);
+        }
+    }
 }
