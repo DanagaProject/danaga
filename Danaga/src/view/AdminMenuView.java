@@ -428,8 +428,8 @@ public class AdminMenuView {
         if ("1".equals(confirm)) {
             // TODO: Controller 연동 - 카테고리 추가
             // adminController.addCategory(name);
-        	ProductController.categoryInsert(name);
-            CommonView.printSuccessMessage("카테고리 등록 완료", "'" + name + "' 카테고리가 추가되었습니다.");
+        	int result = ProductController.categoryInsert(name);
+            if(result > 0) CommonView.printSuccessMessage("카테고리 등록 완료", "'" + name + "' 카테고리가 추가되었습니다.");
         } else if ("0".equals(confirm)) {
             System.out.println("\n카테고리 추가를 취소했습니다.");
         } else {
@@ -498,12 +498,16 @@ public class AdminMenuView {
             System.out.println("════════════════════════════════════════");
             System.out.print("  선택 > ");
             String confirm = sc.nextLine().trim();
+            
+            String oldName = selectedCategory.getName();
 
             if ("1".equals(confirm)) {
                 // TODO: Controller 연동 - 카테고리 수정
                 // adminController.updateCategory(categoryId, newName);
-            	ProductController.categoryUpdate(selectedCategory);
-                CommonView.printSuccessMessage("카테고리 수정 완료", "'" + selectedCategory.getName() + "' → '" + newName + "'로 변경되었습니다.");
+            	selectedCategory.setName(newName);
+            	int result = ProductController.categoryUpdate(selectedCategory);
+                if(result>0)
+                	CommonView.printSuccessMessage("카테고리 수정 완료", "'" + oldName + "' → '" + newName + "'로 변경되었습니다.");
             } else if ("0".equals(confirm)) {
                 System.out.println("\n카테고리 수정을 취소했습니다.");
             } else {

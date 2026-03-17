@@ -12,7 +12,6 @@ import exception.ProductNotFoundException;
 public interface ProductService {
 	/**
 	 * 전체 상품 조회(판매 중인 상품만, 최신순)
-	 * 유효성 검사: 리스트가 비어 있다면 예외처리
 	 * @return 판매 중인 전체 상품 목록
 	 * */
 	List<Product> productSelectAll() throws ProductNotFoundException, DatabaseException;
@@ -20,7 +19,6 @@ public interface ProductService {
 	/**
 	 * 카테고리별 상품 조회(판매 중인 상품만, 최신순)
 	 * 유효성 검사: 카테고리에 해당하는 상품이 없다면 예외처리
-	 * 			 가져온 리스트가 비어 있다면 예외처리
 	 * @param categoryId 조회할 카테고리 번호
 	 * @return 해당 카테고리의 판매 중인 상품 목록
 	 * */
@@ -30,7 +28,6 @@ public interface ProductService {
 	 * 상품명으로 상품 조회(판매중인 상품만, 최신순)
 	 * 유효성 검사: keyword가 null 또는 공백이라면 예외처리
 	 * 			 keyword가 2글자 미만이면 예외처리
-	 * 			 조회된 상품이 없으면 예외처리
 	 * @param keyword 상품 제목에서 검색할 키워드 (2글자 이상)
 	 * @return 키워드가 포함된 판매 중인 상품 목록
 	 * */
@@ -38,7 +35,6 @@ public interface ProductService {
 	
 	/**
 	 * 로그인한 유저의 판매 상품 조회(마이페이지용, 삭제된 상품 제외, 최신순)
-	 * 유효성 검사: 조회된 상품이 없으면 예외처리
 	 * @return 현재 로그인한 사용자의 전체 판매 상품 목록 (판매중/거래중/판매완료 모두 포함)
 	 * */
 	List<Product> productSelectBySellerAll() throws ProductNotFoundException, DatabaseException;
@@ -77,7 +73,6 @@ public interface ProductService {
 	
 	/**
 	 * 카테고리 목록 조회(관리자 전용)
-	 * 유효성 검사: 카테고리 목록이 비어 있으면 예외처리
 	 * @return 전체 카테고리 목록
 	 * */
 	List<Category> categorySelectAll() throws CategoryNotFoundException;
@@ -95,7 +90,7 @@ public interface ProductService {
 	/**
 	 * 카테고리 수정(관리자 전용)
 	 * 유효성 검사: 수정할 카테고리 이름이 null 또는 공백이면 예외처리
-	 * 			 존재하지 않는 카테고리 번호라면 예외처리
+	 * 			 이미 존재하는 카테고리 이름이라면 예외처리
 	 * @param category 수정할 카테고리 정보 (categoryId, name)
 	 * @return 수정 성공 시 1
 	 * */
@@ -112,14 +107,13 @@ public interface ProductService {
 	int categoryDelete(int categoryId) throws CategoryNotFoundException, DatabaseException;
 	
 	/**
-	 * 선호 카테고리 조회(로그인한 유저의 것만)
-	 * 유효성 검사: 선호 카테고리가 없으면 예외처리
+	 * 즐겨찾기 카테고리 조회(로그인한 유저의 것만)
 	 * @return 현재 로그인한 사용자의 선호 카테고리 목록
 	 * */
-	List<FavoriteCategory> favCategorySeletAll() throws CategoryNotFoundException, DatabaseException;
+	List<FavoriteCategory> favCategorySeletAll() throws DatabaseException;
 	
 	/**
-	 * 선호 카테고리 추가(로그인한 유저의 것만)
+	 * 즐겨찾기 카테고리 추가(로그인한 유저의 것만)
 	 * 유효성 검사: 존재하지 않는 카테고리 번호이면 예외처리
 	 * 			 이미 추가된 카테고리이면 예외처리
 	 * 			 DB 등록 실패 시 DatabaseException
@@ -129,16 +123,15 @@ public interface ProductService {
 	int favCategoryInsert(int categoryId) throws DatabaseException, CategoryNotFoundException;
 	
 	/**
-	 * 선호 카테고리 삭제(로그인한 유저의 것만)
+	 * 즐겨찾기 카테고리 삭제(로그인한 유저의 것만)
 	 * 유효성 검사: 현재 유저의 선호 카테고리 목록에 존재하지 않는 번호면 예외처리
 	 * @param categoryId 삭제할 카테고리 번호
 	 * @return 삭제 성공 시 1
 	 * */
-	int favCategoryDelete(int categoryId) throws CategoryNotFoundException, DatabaseException;
+	int favCategoryDelete(int categoryId) throws DatabaseException;
 	
 	/**
 	 * 관리자용 전체 상품 조회(최신순)
-	 * 유효성 검사: 조회된 상품이 없으면 예외처리
 	 * @return 전체 상품 목록 (삭제된 상품, 모든 상태 포함)
 	 * */
 	List<Product> adminProductSelectAll() throws ProductNotFoundException, DatabaseException;
@@ -146,7 +139,6 @@ public interface ProductService {
 	/**
 	 * 관리자용 카테고리별 상품 조회
 	 * 유효성 검사: 존재하지 않는 카테고리 번호이면 예외처리
-	 * 			 조회된 상품이 없으면 예외처리
 	 * @param categoryId 조회할 카테고리 번호
 	 * @return 해당 카테고리의 전체 상품 목록 (삭제된 상품, 모든 상태 포함)
 	 * */
@@ -156,7 +148,6 @@ public interface ProductService {
 	 * 관리자용 상품명으로 상품 가져오기(최신순)
 	 * 유효성 검사: keyword가 null 또는 공백이라면 예외처리
 	 * 			 keyword가 2글자 미만이면 예외처리
-	 * 			 조회된 상품이 없으면 예외처리
 	 * @param keyword 상품 제목에서 검색할 키워드 (2글자 이상)
 	 * @return 키워드가 포함된 전체 상품 목록 (삭제된 상품, 모든 상태 포함)
 	 * */

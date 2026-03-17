@@ -505,7 +505,7 @@ public class ProductDAOImpl implements ProductDAO {
 	
 	/////////////////////////////////////////////////////////////////////
 	@Override
-	public List<FavoriteCategory> favCategorySeletAllByUser(String currentUserId) throws CategoryNotFoundException, DatabaseException {
+	public List<FavoriteCategory> favCategorySeletAllByUser(String currentUserId) throws DatabaseException {
 		Connection con=null;
 		PreparedStatement ps=null;
 		ResultSet rs = null;
@@ -535,7 +535,7 @@ public class ProductDAOImpl implements ProductDAO {
 			}
 		}catch(SQLException e) {
 			e.printStackTrace();
-			throw new CategoryNotFoundException("선호 카테고리가 없습니다.");
+			throw new DatabaseException("데이터베이스 오류 발생");
 		}finally {
 			DBUtil.close(con,ps,rs);
 		}
@@ -570,7 +570,7 @@ public class ProductDAOImpl implements ProductDAO {
 	}
 
 	@Override
-	public int favCategoryDelete(String currentUserId, int cateogryId) throws CategoryNotFoundException {
+	public int favCategoryDelete(String currentUserId, int cateogryId) throws DatabaseException {
 		Connection con=null;
 		PreparedStatement ps=null;
 		String sql = "delete from favorite_category where user_id = ? and category_id = ?";
@@ -586,7 +586,7 @@ public class ProductDAOImpl implements ProductDAO {
 			result = ps.executeUpdate();
 		}catch(SQLException e) {
 			e.printStackTrace();
-			throw new CategoryNotFoundException("선호 카테고리를 삭제할 수 없습니다.");
+			throw new DatabaseException("선호 카테고리를 삭제할 수 없습니다.");
 		}finally {
 			DBUtil.close(con, ps);
 		}

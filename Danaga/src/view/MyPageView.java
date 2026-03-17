@@ -1071,7 +1071,7 @@ public class MyPageView {
 
         // 4. 카테고리 입력
         // 카테고리 목록 조회 (추후 DAO에서 조회)
-    	List<Category> categories = getSampleCategories();
+    	List<Category> categories = ProductController.categorySelectAll();
     	
     	Category category = inputProductCategoryId(categories);
         if (category == null) return null;

@@ -31,8 +31,6 @@ public class ProductServiceImpl implements ProductService {
 	               .filter(p -> p.getIsDeleted().equalsIgnoreCase("n") && p.getStatusId() == 10)
 	               .collect(Collectors.toList());
 	    
-		if(list.isEmpty())
-			throw new ProductNotFoundException("상품 목록이 없습니다.");
 		return list;
 	}
 	
@@ -51,8 +49,6 @@ public class ProductServiceImpl implements ProductService {
 	               .filter(p -> p.getIsDeleted().equalsIgnoreCase("n") && p.getStatusId() == 10)
 	               .collect(Collectors.toList());
 	    
-	    if (list.isEmpty())
-	        throw new ProductNotFoundException("카테고리에 상품이 없습니다.");
 	    return list;
 	}
 	
@@ -69,9 +65,7 @@ public class ProductServiceImpl implements ProductService {
 		list = list.stream()
 	               .filter(p -> p.getIsDeleted().equalsIgnoreCase("n") && p.getStatusId() == 10)
 	               .collect(Collectors.toList());
-		
-		if(list.isEmpty()) 
-			throw new ProductNotFoundException("'" + keyword + "'에 해당하는 상품이 없습니다.");
+
 		return list;
 	}
 	
@@ -86,8 +80,6 @@ public class ProductServiceImpl implements ProductService {
 		           .filter(p -> p.getIsDeleted().equalsIgnoreCase("n"))
 		           .collect(Collectors.toList());
 		
-		if(list.isEmpty()) 
-			throw new ProductNotFoundException("판매 물품이 없습니다.");
 		return list;
 	}
 	
@@ -163,8 +155,6 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public List<Category> categorySelectAll() throws CategoryNotFoundException {
 		List<Category> list = productDAO.categorySelectAll();
-		if(list.isEmpty())
-			throw new CategoryNotFoundException("카테고리 목록이 없습니다.");
 		return list;
 	}
 	
@@ -191,11 +181,11 @@ public class ProductServiceImpl implements ProductService {
 	        throw new CategoryNotFoundException("수정할 카테고리 이름을 입력해주세요.");
 		
 		List<Category> list = productDAO.categorySelectAll();
-	    boolean isExist = list.stream()
-	            .anyMatch(c -> c.getCategoryId() == category.getCategoryId());
-	    if (!isExist)
-	        throw new CategoryNotFoundException(category.getCategoryId() + "번 카테고리가 존재하지 않습니다.");
-		
+	    boolean isDuplicate = list.stream()
+	            .anyMatch(c -> c.getName().equalsIgnoreCase(category.getName()));
+	    if (isDuplicate)
+	        throw new CategoryNotFoundException("이미 존재하는 카테고리 이름입니다.");
+	    
 		int result = productDAO.categoryUpdate(category);
 		if(result==0)
 			throw new CategoryNotFoundException("카테고리가 수정에 실패했습니다.");
@@ -227,11 +217,9 @@ public class ProductServiceImpl implements ProductService {
 	//////////////////////////////////////////////////////////////////////
 	
 	@Override
-	public List<FavoriteCategory> favCategorySeletAll() throws CategoryNotFoundException, DatabaseException {
+	public List<FavoriteCategory> favCategorySeletAll() throws DatabaseException {
 		String currentUserId =  SessionManager.getCurrentUserId();
 		List<FavoriteCategory> list = productDAO.favCategorySeletAllByUser(currentUserId);
-		if(list.isEmpty()) 
-			throw new CategoryNotFoundException("선호하는 카테고리가 없습니다.");
 		return list;
 	}
 	
@@ -258,19 +246,19 @@ public class ProductServiceImpl implements ProductService {
 	}
 	
 	@Override
-	public int favCategoryDelete(int categoryId) throws CategoryNotFoundException, DatabaseException {
+	public int favCategoryDelete(int categoryId) throws DatabaseException {
 		String currentUserId = SessionManager.getCurrentUserId();
 		
 		List<FavoriteCategory> favList = productDAO.favCategorySeletAllByUser(currentUserId);
 		boolean isExist = favList.stream()
             .anyMatch(f -> f.getCategoryId() == categoryId);
 	    if (!isExist)
-	        throw new CategoryNotFoundException("선호 카테고리에 존재하지 않는 카테고리입니다.");
+	        throw new DatabaseException("선호 카테고리에 존재하지 않는 카테고리입니다.");
 
 		
 		int result = productDAO.favCategoryDelete(currentUserId, categoryId);
 		if(result==0)
-			throw new CategoryNotFoundException("해당 카테고리를 삭제할 수 없습니다.");
+			throw new DatabaseException("해당 카테고리를 삭제할 수 없습니다.");
 		return result;
 	}
 	
@@ -279,10 +267,9 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public List<Product> adminProductSelectAll() throws ProductNotFoundException, DatabaseException {
 	    List<Product> list = productDAO.productSelectAll();
-	    if (list.isEmpty())
-	        throw new ProductNotFoundException("상품 목록이 없습니다.");
 	    return list;
 	}
+	
 	@Override
 	public List<Product> adminProductSelectByCategory(int categoryId) throws ProductNotFoundException, DatabaseException, CategoryNotFoundException {
 	    List<Category> categoryList = productDAO.categorySelectAll();
@@ -294,8 +281,6 @@ public class ProductServiceImpl implements ProductService {
 
 	    List<Product> list = productDAO.productSelectByCategory(categoryId);
 	    
-	    if (list.isEmpty())
-	        throw new ProductNotFoundException("카테고리에 상품이 없습니다.");
 	    return list;
 	}
 	@Override
@@ -307,8 +292,7 @@ public class ProductServiceImpl implements ProductService {
 	        throw new ProductNotFoundException("검색어는 2글자 이상 입력해주세요.");
 
 	    List<Product> list = productDAO.productSelectByName(keyword);
-	    if (list.isEmpty())
-	        throw new ProductNotFoundException("'" + keyword + "'에 해당하는 상품이 없습니다.");
+
 	    return list;
 	}
 	
