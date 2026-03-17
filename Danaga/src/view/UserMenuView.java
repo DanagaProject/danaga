@@ -83,9 +83,14 @@ public class UserMenuView {
         List<Product> products = ProductController.productSelectAll();
         ProductView.printProductList(products);
 
+        if (products.isEmpty()) {
+            System.out.println("\n해당 카테고리에 상품이 없습니다.");
+            return;
+        }
+        
         System.out.print("\n번호입력(상세보기) (0: 뒤로가기) > ");
         String input = sc.nextLine().trim();
-
+        
         if (!"0".equals(input)) {
             try {
                 int productId = Integer.parseInt(input);

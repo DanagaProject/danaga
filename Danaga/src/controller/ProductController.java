@@ -1,5 +1,6 @@
 package controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dto.Category;
@@ -8,7 +9,6 @@ import dto.Product;
 import exception.CategoryNotFoundException;
 import exception.DatabaseException;
 import exception.ProductNotFoundException;
-
 import service.ProductService;
 import service.ProductServiceImpl;
 import view.FailView;
@@ -20,7 +20,7 @@ public class ProductController {
 	 * 상품 목록 조회
 	 * */
 	public static List<Product> productSelectAll() {
-		List<Product> list = null;
+		List<Product> list = new ArrayList<>();
 		try {
 			list = productService.productSelectAll();
 		}catch(ProductNotFoundException e) {
@@ -36,7 +36,7 @@ public class ProductController {
 	 * 카테고리별 상품 조회
 	 * */
 	public static List<Product> productSelectByCategory(int categoryId) {
-		List<Product> list = null;
+		List<Product> list = new ArrayList<>();
 		try {
 			list = productService.productSelectByCategory(categoryId);   
         }catch(ProductNotFoundException e) {
@@ -53,7 +53,7 @@ public class ProductController {
 	 * 상품명으로 상품 조회
 	 * */
 	public static List<Product> productSelectByName(String keyword) {
-		List<Product> list = null;
+		List<Product> list = new ArrayList<>();
 		try {
 			list = productService.productSelectByName(keyword);   
         }catch(ProductNotFoundException e) {
@@ -68,7 +68,7 @@ public class ProductController {
 	 * 사용자의 판매 상품 조회(마이페이지용)
 	 * */
 	public static List<Product> productSelectBySellerAll() {
-		List<Product> list = null;
+		List<Product> list = new ArrayList<>();
 		try {
 			list = productService.productSelectBySellerAll();   
         }catch(ProductNotFoundException e) {
@@ -128,7 +128,7 @@ public class ProductController {
 	 * 카테고리 목록 조회
 	 * */
 	public static List<Category> categorySelectAll(){
-		List<Category> list = null;
+		List<Category> list = new ArrayList<>();
 		try {
 			list = productService.categorySelectAll();
 		}catch(CategoryNotFoundException e) {
@@ -182,14 +182,12 @@ public class ProductController {
 	
 	
 	/**
-	 * 선호 카테고리 조회
+	 * 즐겨찾기 카테고리 조회
 	 * */
 	public static List<FavoriteCategory> favCategorySelectAll(){
-		List<FavoriteCategory> list = null;
+		List<FavoriteCategory> list = new ArrayList<>();
 		try {
 			list = productService.favCategorySeletAll();
-		}catch(CategoryNotFoundException e) {
-			FailView.printMessage(e.getMessage());
 		}catch(DatabaseException e) {
 			FailView.printMessage(e.getMessage());
 		}
@@ -198,7 +196,7 @@ public class ProductController {
 	
 	
 	/**
-	 * 선호 카테고리 추가
+	 * 즐겨찾기 카테고리 추가
 	 * */
 	public static int favCategoryInsert(int categoryId) {
 		int result = 0;
@@ -214,14 +212,12 @@ public class ProductController {
 	
 	
 	/**
-	 * 선호 카테고리 삭제(delete)
+	 * 즐겨찾기 카테고리 삭제(delete)
 	 * */
 	public static int favCategoryDelete(int categoryId) {
 		int result = 0;
 		try {
 			result = productService.favCategoryDelete(categoryId);
-		}catch(CategoryNotFoundException e) {
-			FailView.printMessage(e.getMessage());
 		}catch(DatabaseException e) {
 			FailView.printMessage(e.getMessage());
 		}
@@ -232,7 +228,7 @@ public class ProductController {
 	 * 관리자용 상품 목록 조회(모든 상태)
 	 * */
 	public static List<Product> adminProductSelectAll(){
-		List<Product> list = null;
+		List<Product> list = new ArrayList<>();
 		try {
 			list = productService.adminProductSelectAll();
 		}catch(ProductNotFoundException e) {
@@ -247,7 +243,7 @@ public class ProductController {
 	 * 관리자용 카테고리별 상품 조회(모든 상태)
 	 * */
 	public static List<Product> adminProductSelectByCategory(int categoryId){
-		List<Product> list = null;
+		List<Product> list = new ArrayList<>();
 		try {
 			list = productService.adminProductSelectByCategory(categoryId);
 		}catch(ProductNotFoundException e) {
@@ -265,7 +261,7 @@ public class ProductController {
 	 * 관리자용 상품명으로 상품 조회(모든 상태)
 	 * */
 	public static List<Product> adminProductSelectByName(String name){
-		List<Product> list = null;
+		List<Product> list = new ArrayList<>();
 		try {
 			list = productService.adminProductSelectByName(name);
 		}catch(ProductNotFoundException e) {

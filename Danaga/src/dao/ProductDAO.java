@@ -74,18 +74,18 @@ public interface ProductDAO {
 	int categoryDelete(int categoryId) throws CategoryNotFoundException;
 	
 	/**
-	 * 선호 카테고리 조회
+	 * 즐겨찾기 카테고리 조회
 	 * */
-	List<FavoriteCategory> favCategorySeletAllByUser(String currentUserId) throws CategoryNotFoundException, DatabaseException;
+	List<FavoriteCategory> favCategorySeletAllByUser(String currentUserId) throws DatabaseException;
 	
 	/**
-	 * 선호 카테고리 추가
+	 * 즐겨찾기 카테고리 추가
 	 * */
 	int favCategoryInsert(String currentUserId, int categoryId) throws DatabaseException;
 	
 	/**
-	 * 선호 카테고리 삭제(delete)
+	 * 즐겨찾기 카테고리 삭제(delete)
 	 * */
-	int favCategoryDelete(String currentUserId, int cateogryId) throws CategoryNotFoundException;
+	int favCategoryDelete(String currentUserId, int cateogryId) throws DatabaseException;
 	
 }
