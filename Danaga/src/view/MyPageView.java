@@ -8,6 +8,7 @@ import java.util.Scanner;
 import controller.CodeController;
 import controller.OrdersController;
 import controller.ProductController;
+import controller.UserController;
 import dto.Category;
 import dto.Code;
 import dto.FavoriteCategory;
@@ -23,13 +24,13 @@ public class MyPageView {
     private Scanner sc;
     private final CodeController codeController;
     private final OrdersController ordersController;
-    
+    private final UserController userController;
     
     public MyPageView(Scanner sc) {
         this.sc = sc;
         this.codeController = new CodeController();
         this.ordersController = new OrdersController();
-        
+        this.userController = new UserController();
     }
 
     /**
@@ -1656,7 +1657,8 @@ public class MyPageView {
 
                 if ("1".equals(confirm)) {
                     // 충전 처리 (추후 Controller/Service 연동)
-                   
+                	userController.chargeBalance(chargeAmount);
+                	int updatedBalance = SessionManager.getCurrentUser().getBalance();
                     BalanceView.printChargeSuccess(chargeAmount, currentBalance + chargeAmount);
                     return;
                 } else if ("0".equals(confirm)) {
