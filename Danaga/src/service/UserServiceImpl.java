@@ -103,4 +103,22 @@ public class UserServiceImpl implements UserService {
         SessionManager.logout();
         System.out.println("[UserService] 로그아웃 완료");
     }
+    @Override
+    public void chargeBalance(User user, int amount) throws DatabaseException {
+        // 1. 유효성 검사 (필요 시)
+        if (amount <= 0) {
+            throw new DatabaseException("충전 금액은 0원보다 커야 합니다.");
+        }
+
+        // 2. DAO 호출 (실제 DB 업데이트 수행)
+        userDAO.chargeBalance(user, amount);
+
+        // 3. 세션 정보 동기화
+        // DB 업데이트가 성공했으므로, 메모리에 있는 유저 객체의 잔액도 갱신해줍니다.
+        // 이렇게 해야 다음 화면에서 바로 수정된 잔액이 보입니다.
+        user.setBalance(user.getBalance() + amount);
+        
+        // 만약 세션 매니저를 직접 참조한다면 아래와 같이 확정할 수도 있습니다.
+        // SessionManager.getLoginUser().setBalance(user.getBalance());
+    }
 }

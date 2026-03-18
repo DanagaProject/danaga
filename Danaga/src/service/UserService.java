@@ -9,7 +9,7 @@ import exception.UserNotFoundException;
  * 회원 Service 인터페이스
  */
 public interface UserService {
-
+	
     /**
      * 회원가입
      */
@@ -24,4 +24,10 @@ public interface UserService {
      * 로그아웃
      */
     void logout();
+    
+    /**
+     * 잔액 충전 로직
+     */
+    void chargeBalance(User user, int amount) throws DatabaseException;
+    
 }

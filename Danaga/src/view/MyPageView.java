@@ -1656,7 +1656,7 @@ public class MyPageView {
 
                 if ("1".equals(confirm)) {
                     // 충전 처리 (추후 Controller/Service 연동)
-                    System.out.println("\n[TODO] 잔액 충전 처리 - Controller/Service 연동 예정");
+                   
                     BalanceView.printChargeSuccess(chargeAmount, currentBalance + chargeAmount);
                     return;
                 } else if ("0".equals(confirm)) {
