@@ -47,6 +47,38 @@ public class ProductView {
         System.out.println("총 " + products.size() + "개의 상품");
         System.out.println("════════════════════════════════════════════════════════════════════════════════");
     }
+    
+    /**
+     * 상품 목록 출력 (표 형식)
+     */
+    public static void printProductListForAdmin(List<Product> products) {
+        if (products == null || products.isEmpty()) {
+            System.out.println("\n조회된 상품이 없습니다.");
+            return;
+        }
+
+        System.out.println("\n════════════════════════════════════════════════════════════════════════════════");
+        System.out.println("                                    상품 목록                                    ");
+        System.out.println("════════════════════════════════════════════════════════════════════════════════");
+        System.out.printf("%-6s %-20s %-10s %-8s %-10s %-10s %-10s%n",
+                "번호", "제목", "가격", "상태", "카테고리", "판매자", "거래상태");
+        System.out.println("────────────────────────────────────────────────────────────────────────────────");
+
+        for (Product product : products) {
+            System.out.printf("%-6d %-20s %,10d원 %-8s %-10s %-10s %-10s%n",
+                    product.getProductId(),
+                    CommonView.truncate(product.getTitle(), 20),
+                    product.getPrice(),
+                    product.getItemCondition() != null ? product.getItemCondition() : "-",
+                    product.getCategoryName() != null ? product.getCategoryName() : "-",
+                    product.getSellerId() != null ? product.getSellerId() : "-",
+            		product.getStatus() != null ? product.getStatus() : "-");
+        }
+
+        System.out.println("════════════════════════════════════════════════════════════════════════════════");
+        System.out.println("총 " + products.size() + "개의 상품");
+        System.out.println("════════════════════════════════════════════════════════════════════════════════");
+    }
 
     /**
      * 상품 상세 정보 출력

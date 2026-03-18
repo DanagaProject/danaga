@@ -117,7 +117,7 @@ public class AdminMenuView {
         // List<Product> products = productController.getAllProductsForAdmin();
         List<Product> products = ProductController.adminProductSelectAll();
 
-        ProductView.printProductList(products);
+        ProductView.printProductListForAdmin(products);
 
         System.out.print("\n번호입력(상세보기) (0: 뒤로가기) > ");
         String input = sc.nextLine().trim();
@@ -158,7 +158,7 @@ public class AdminMenuView {
                 return;
             }
 
-            ProductView.printProductList(filteredProducts);
+            ProductView.printProductListForAdmin(filteredProducts);
 
             System.out.print("\n번호입력(상세보기) (0: 뒤로가기) > ");
             String input = sc.nextLine().trim();
@@ -200,7 +200,7 @@ public class AdminMenuView {
             return;
         }
 
-        ProductView.printProductList(searchResults);
+        ProductView.printProductListForAdmin(searchResults);
 
         System.out.print("\n번호입력(상세보기) (0: 뒤로가기) > ");
         String input = sc.nextLine().trim();
