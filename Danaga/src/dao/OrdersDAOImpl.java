@@ -89,21 +89,32 @@ public class OrdersDAOImpl implements OrdersDAO {
 	    return result;
 	}
 
-   
+/////////////////////////////// 
+///    조회
 
-	@Override
-    public List<Orders> selectordersByUserId(String userId) throws SQLException {
+	
+	// 1. 중복 코드를 모두 모아둔 private 공통 메서드 생성
+    public List<Orders> getOrdersListByCondition(String whereColumn, String id) throws SQLException {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        List<Orders> list = new ArrayList<>();
+        List<Orders> list = new java.util.ArrayList<>();
 
         try {
-            con = DBUtil.getConnection();
-            String sql = "SELECT * FROM orders WHERE buyer_id = ? " + "ORDER BY orders_id DESC";
+            con = util.DBUtil.getConnection();
+            
+            // whereColumn 매개변수를 통해 buyer_id로 검색할지 seller_id로 검색할지 동적으로 결정합니다.
+            String sql = "SELECT o.orders_id, o.product_id, o.buyer_id, o.status_id, o.created_at, " +
+                         "p.title, p.price, p.seller_id, " +
+                         "c.name as status_name " +
+                         "FROM orders o " +
+                         "JOIN product p ON o.product_id = p.product_id " +
+                         "LEFT JOIN code c ON o.status_id = c.code_id " +
+                         "WHERE " + whereColumn + " = ? " +
+                         "ORDER BY o.orders_id DESC";
                          
             ps = con.prepareStatement(sql);
-            ps.setString(1, userId);
+            ps.setString(1, id);
             rs = ps.executeQuery();
             
             while (rs.next()) {
@@ -114,15 +125,31 @@ public class OrdersDAOImpl implements OrdersDAO {
                 orders.setStatusId(rs.getInt("status_id"));
                 orders.setCreatedAt(rs.getString("created_at"));
                 
+                orders.setProductTitle(rs.getString("title")); 
+                orders.setProductPrice(rs.getInt("price"));
+                orders.setSellerId(rs.getString("seller_id"));
+                orders.setStatus(rs.getString("status_name"));
+                
                 list.add(orders);
             }
-        } catch (SQLException e) {
-			// TODO: handle exception
-        	e.printStackTrace();
-		} finally {
-            DBUtil.close(con, ps, rs);
+        } finally {
+            util.DBUtil.close(con, ps, rs);
         }
         return list;
+    }
+
+    // 2. 내 구매 현황 조회 (인터페이스 구현부)
+    @Override
+    public List<Orders> selectordersByUserId(String userId) throws SQLException {
+        // buyer_id 컬럼명과 조회할 아이디만 넘겨줍니다.
+        return getOrdersListByCondition("o.buyer_id", userId);
+    }
+
+    // 3. 내 판매 현황 조회 (인터페이스 구현부)
+    @Override
+    public List<Orders> selectSalesBySellerId(String sellerId) throws SQLException {
+        // seller_id 컬럼명과 조회할 아이디만 넘겨줍니다.
+        return getOrdersListByCondition("p.seller_id", sellerId);
     }
 	@Override
 	public Orders selectOrderById(int orderId) throws SQLException {
@@ -135,9 +162,11 @@ public class OrdersDAOImpl implements OrdersDAO {
 	        con = DBUtil.getConnection();
 	        
 	        String sql = "SELECT o.orders_id, o.product_id, o.buyer_id, o.status_id, " +
-	                     "p.price, p.seller_id " +
+	                     "p.title, p.price, p.seller_id, " +
+	                     "c.name as status_name " +
 	                     "FROM orders o " +
 	                     "JOIN product p ON o.product_id = p.product_id " +
+	                     "LEFT JOIN code c ON o.status_id = c.code_id "+
 	                     "WHERE o.orders_id = ?";
 	                     
 	        ps = con.prepareStatement(sql);
@@ -150,7 +179,8 @@ public class OrdersDAOImpl implements OrdersDAO {
 	            order.setProductId(rs.getInt("product_id"));
 	            order.setBuyerId(rs.getString("buyer_id"));
 	            order.setStatusId(rs.getInt("status_id"));
-	            
+	            order.setStatus(rs.getString("status_name"));
+	            order.setProductTitle(rs.getString("title"));
 	            
 	            order.setProductPrice(rs.getInt("price")); 
 	            order.setSellerId(rs.getString("seller_id"));

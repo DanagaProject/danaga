@@ -50,11 +50,6 @@ public class SaleView {
                     order.getProductTitle() + "  거래 완료  " + dateStr);
             }
         }
-
-        System.out.println();
-        System.out.println("  1. 배송 처리    2. 취소 요청 처리    3. 전체 이력 조회    0. 돌아가기");
-        System.out.println("════════════════════════════════════════");
-        System.out.print("  선택 > ");
     }
 
     /**
@@ -178,7 +173,24 @@ public class SaleView {
         System.out.println("처리할 취소 요청 번호 입력");
         System.out.println();
     }
-
+    
+    
+    
+    /**
+     * 판매자 입장에서 구매 취소 동의 혹은 거절
+     */
+    public static void printSellerCancelDecisionScreen(Orders order) {
+        System.out.println("\n════════════════════════════════════════");
+        System.out.println("  📩 구매자 취소 요청 확인");
+        System.out.println("════════════════════════════════════════");
+        System.out.println("  상품명: " + order.getProductTitle());
+        System.out.println("  금액: " + String.format("%,d원", order.getProductPrice()));
+        System.out.println("════════════════════════════════════════");
+        System.out.println("  1. 취소 동의 (즉시 환불 처리)");
+        System.out.println("  2. 취소 거절 (관리자 중재 요청)");
+        System.out.println("  0. 돌아가기");
+        System.out.print("  선택 > ");
+    }
     /**
      * 취소 요청 처리 확인 화면
      */
@@ -222,7 +234,7 @@ public class SaleView {
                     CommonView.truncateSimple(order.getProductTitle(), 15),
                     order.getProductPrice(),
                     order.getBuyerId() != null ? order.getBuyerId() : "-",
-                    CommonView.getOrderStatusText(order.getStatus()),
+                    (order.getStatus() != null ? order.getStatus() : "-"),
                     order.getCreatedAt() != null ? order.getCreatedAt().substring(0, 10) : "-");
         }
 

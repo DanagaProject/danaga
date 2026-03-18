@@ -16,6 +16,10 @@ public interface OrdersDAO {
      */
 	List<Orders> selectordersByUserId(String userId) throws SQLException;
 	
+	List<Orders> getOrdersListByCondition(String whereColumn, String id) throws SQLException;
+	
+	List<Orders> selectSalesBySellerId(String sellerId) throws SQLException;
+	
 	/**
      * 특정 주문 번호로 1건 상세 조회 (정산 정보 포함)
      */

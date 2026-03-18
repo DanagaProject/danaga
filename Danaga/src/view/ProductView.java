@@ -6,6 +6,8 @@ import dto.Comment;
 import dto.Product;
 import java.util.List;
 import java.util.Scanner;
+
+import controller.OrdersController;
 import util.SessionManager;
 
 /**
@@ -230,9 +232,18 @@ public class ProductView {
                         // 댓글 목록 새로고침을 위해 상품 상세를 다시 출력
                         printProductDetail(product);
                     } else if ("4".equals(choice)) {
-                        // 구매신청 처리 (추후 구현)
-                        System.out.println("\n구매신청 기능은 추후 구현 예정입니다.");
-                        CommonView.pauseScreen(sc);
+                        // 1. 컨트롤러 생성 (메서드 상단에 이미 선언되어 있다면 생략 가능)
+                        OrdersController ordersController = new OrdersController();
+                        
+                        // 2. 컨트롤러에게 구매 프로세스 전권을 위임
+                        // 성공 시 true(목록으로 이동), 취소/실패 시 false(상세화면 유지)
+                        boolean isPurchased = ordersController.processPurchaseRequest(product);
+                        
+                        if (isPurchased) {
+                            return false; // 구매 완료 후 상품 목록 화면으로 돌아감
+                        } else {
+                            printProductDetail(product); // 구매 취소 시 다시 상세 정보를 보여줌
+                        }
                     } else if ("0".equals(choice)) {
                         return false;
                     } else {

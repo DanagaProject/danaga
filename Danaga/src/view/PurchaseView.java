@@ -33,7 +33,7 @@ public class PurchaseView {
                     CommonView.truncateSimple(order.getProductTitle(), 15),
                     order.getProductPrice(),
                     order.getSellerId() != null ? order.getSellerId() : "-",
-                    CommonView.getOrderStatusText(order.getStatus()),
+                    (order.getStatus() != null ? order.getStatus() : "-"),
                     order.getCreatedAt() != null ? order.getCreatedAt().substring(0, 10) : "-");
         }
 
