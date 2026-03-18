@@ -30,4 +30,8 @@ public interface UserService {
      */
     void chargeBalance(User user, int amount) throws DatabaseException;
     
+    /**
+     * 회원 정보 단건 조회 (세션 동기화용)
+     */
+    User selectByUser(User user) throws DatabaseException;
 }

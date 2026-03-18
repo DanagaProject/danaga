@@ -121,4 +121,13 @@ public class UserServiceImpl implements UserService {
         // 만약 세션 매니저를 직접 참조한다면 아래와 같이 확정할 수도 있습니다.
         // SessionManager.getLoginUser().setBalance(user.getBalance());
     }
+    
+    /**
+     * 회원 정보 단건 조회
+     * DAO의 selectByUser를 그대로 호출하여 결과를 반환합니다.
+     */
+    @Override
+    public User selectByUser(User user) throws DatabaseException {
+        return userDAO.selectByUser(user);
+    }
 }

@@ -53,4 +53,11 @@ public class SessionManager {
     public static String getCurrentUserId() {
         return currentUser != null ? currentUser.getUserId() : null;
     }
+
+    /**
+     * 로그인 세션 정보 갱신 (새로고침용, 로그 출력 없음)
+     */
+    public static void updateSession(User user) {
+        currentUser = user;
+    }
 }

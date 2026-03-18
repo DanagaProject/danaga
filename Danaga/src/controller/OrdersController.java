@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import dto.Orders;
 import dto.Product;
+import dto.User;
 import service.OrdersService;
 import service.OrdersServiceImpl;
 import util.SessionManager;
@@ -19,46 +20,34 @@ public class OrdersController {
     // ==========================================
     // 1. 상품 상세페이지 -> 구매 신청 프로세스
     // ==========================================
-    public boolean processPurchaseRequest(Product product) {
-        // 본인 상품 구매 불가 검증
-        if (product.getSellerId().equals(SessionManager.getCurrentUserId())) {
-            OrdersView.printSelfPurchaseError();
-            CommonView.pauseScreen(sc);
-            return false;
-        }
-
-        // 판매 중 상태 검증 (10번 기준)
-        if (product.getStatusId() != 10) { 
-            OrdersView.printNotForSaleError();
-            CommonView.pauseScreen(sc);
-            return false;
-        }
-
-        // 구매 확인창 출력 (뷰 호출)
-        OrdersView.printOrderConfirm(product);
-        String choice = sc.nextLine().trim();
-
-        if ("1".equals(choice)) {
-            try {
-                Orders order = new Orders();
-                order.setProductId(product.getProductId());
-                order.setBuyerId(SessionManager.getCurrentUserId());
-
-                // 서비스 호출 (실제 DB 처리)
-                ordersService.ordersInsert(order);
-                
-                OrdersView.printPurchaseSuccess(); // 뷰 호출로 교체
-                CommonView.pauseScreen(sc);
-                return true; 
-            } catch (SQLException e) {
-                OrdersView.printPurchaseFail(e.getMessage()); // 뷰 호출로 교체
-                CommonView.pauseScreen(sc);
-                return false;
+    public boolean requestPurchase(int productId) {
+        try {
+            // 1. 세션에서 현재 로그인한 유저 객체 가져오기
+            User loginUser = SessionManager.getCurrentUser();
+            
+            if (loginUser == null) {
+                return false; // 로그인 정보가 없으면 실패 처리
             }
-        }
 
-        OrdersView.printPurchaseCanceled(); // 뷰 호출로 교체
-        return false;
+            // 2. 서비스로 넘겨줄 주문(Orders) DTO 생성 및 세팅
+            Orders order = new Orders();
+            order.setProductId(productId);
+            order.setBuyerId(loginUser.getUserId());
+
+            // 3. 서비스 호출
+            // 유저 객체(loginUser)를 함께 넘겨서, 서비스단에서 DB 차감 후 세션 잔액까지 동기화하게 합니다.
+            ordersService.ordersInsert(order, loginUser);
+            
+            // 4. 에러 없이 끝났다면 뷰에게 성공(true)을 알림
+            return true; 
+
+        } catch (SQLException e) {
+            // 잔액 부족이나 DB 에러가 발생하여 서비스에서 예외를 던졌을 때
+            // 뷰에게 실패(false)를 알려서 실패 화면을 띄우게 합니다.
+            // 개발자 확인용 로그만 가볍게 남깁니다.
+            // System.out.println("\n[System Log] 구매 처리 실패: " + e.getMessage());
+            return false; 
+        }
     }
 
     // ==========================================
@@ -92,8 +81,9 @@ public class OrdersController {
     // 3. 취소 요청 승인 및 환불 (상태 6 -> 7)
     public void cancelComplete(int orderId) {
         try {
+        	User loginUser = SessionManager.getCurrentUser();
             // 1. 서비스 계층 호출 (실제 환불 및 상태 변경 로직 실행)
-            ordersService.cancelComplete(orderId);
+        	ordersService.cancelComplete(orderId, loginUser);
         } catch (SQLException e) {
             // 3. DB 에러 발생 시 로그를 남기거나 사용자에게 알림
             System.out.println("\n❌ [DB 오류] 취소 처리 중 문제가 발생했습니다: " + e.getMessage());
