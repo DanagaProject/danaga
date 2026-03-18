@@ -140,4 +140,12 @@ public class OrdersServiceImpl implements OrdersService {
             throw new SQLException("강제 구매 확정 처리 중 오류가 발생했습니다.");
         }
     }
+    
+    @Override
+    public List<Orders> getSalesBySellerId(String sellerId) throws SQLException {
+        if (sellerId == null || sellerId.isEmpty()) {
+            throw new SQLException("판매자 정보가 유효하지 않습니다.");
+        }
+        return ordersDAO.selectSalesBySellerId(sellerId);
+    }
 }

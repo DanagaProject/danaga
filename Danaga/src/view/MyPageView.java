@@ -1,10 +1,12 @@
 package view;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 import controller.CodeController;
+import controller.OrdersController;
 import controller.ProductController;
 import dto.Category;
 import dto.Code;
@@ -20,10 +22,14 @@ import util.SessionManager;
 public class MyPageView {
     private Scanner sc;
     private final CodeController codeController;
-
+    private final OrdersController ordersController;
+    
+    
     public MyPageView(Scanner sc) {
         this.sc = sc;
         this.codeController = new CodeController();
+        this.ordersController = new OrdersController();
+        
     }
 
     /**
@@ -90,43 +96,54 @@ public class MyPageView {
     /**
      * 내 구매 현황
      */
+    /**
+     * 내 구매 현황
+     */
     private void viewPurchaseHistory() {
         while (true) {
-            // 샘플 데이터 가져오기 (추후 Controller를 통해 실제 데이터 조회)
-            List<Orders> myOrders = getSampleOrders();
-            //myOrders.clear();//empty 테스트용
+            try {
+            	String userId = SessionManager.getCurrentUserId();
+                // 컨트롤러 호출 시 예외가 발생할 수 있으므로 try 블록 안에서 실행
+                List<Orders> myOrders = ordersController.getOrdersByUserId(userId);
 
-            // PurchaseView를 사용하여 구매 목록 출력
-            PurchaseView.printPurchaseList(myOrders);
+                // PurchaseView를 사용하여 구매 목록 출력
+                PurchaseView.printPurchaseList(myOrders);
 
-            if (myOrders == null || myOrders.isEmpty()) {
-                CommonView.waitForBack(sc);
-                return;
-            }
-
-            System.out.println("\n  1. 주문 상세보기");
-            System.out.println("  2. 구매확정");
-            System.out.println("  3. 주문 취소 요청");
-            System.out.println("  0. 돌아가기");
-            System.out.println("════════════════════════════════════════════════════════════════════════════════");
-            System.out.print("  선택 > ");
-
-            String menu = sc.nextLine().trim();
-
-            switch (menu) {
-                case "1":
-                    viewOrderDetail(myOrders);
-                    break;
-                case "2":
-                    confirmPurchase(myOrders);
-                    break;
-                case "3":
-                    requestOrderCancel(myOrders);
-                    break;
-                case "0":
+                if (myOrders == null || myOrders.isEmpty()) {
+                    CommonView.waitForBack(sc);
                     return;
-                default:
-                    System.out.println("잘못된 입력입니다.");
+                }
+
+                System.out.println("\n  1. 주문 상세보기");
+                System.out.println("  2. 구매확정");
+                System.out.println("  3. 주문 취소 요청");
+                System.out.println("  0. 돌아가기");
+                System.out.println("════════════════════════════════════════════════════════════════════════════════");
+                System.out.print("  선택 > ");
+
+                String menu = sc.nextLine().trim();
+
+                switch (menu) {
+                    case "1":
+                        viewOrderDetail(myOrders);
+                        break;
+                    case "2":
+                        confirmPurchase(myOrders);
+                        break;
+                    case "3":
+                        requestOrderCancel(myOrders);
+                        break;
+                    case "0":
+                        return;
+                    default:
+                        System.out.println("잘못된 입력입니다.");
+                }
+
+            } catch (SQLException e) {
+                // DB 연동 중 에러 발생 시 안내 메시지 출력 후 마이페이지 메인으로 복귀
+                System.out.println("\n❌ 구매 내역을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+                CommonView.waitForBack(sc);
+                return; 
             }
         }
     }
@@ -160,10 +177,17 @@ public class MyPageView {
      */
     private void confirmPurchase(List<Orders> orders) {
         // DAO에서 확정 가능한 주문만 조회해올 예정
-        PurchaseView.printConfirmPurchaseHeader();
-        PurchaseView.printSimpleOrderList(orders);
+    	List<Orders> confirmableOrders = new java.util.ArrayList<>();
+        for (Orders o : orders) {
+            if (o.getStatusId() == 4) {
+                confirmableOrders.add(o);
+            }
+        }
 
-        if (orders.isEmpty()) {
+        PurchaseView.printConfirmPurchaseHeader();
+        PurchaseView.printSimpleOrderList(confirmableOrders);
+
+        if (confirmableOrders.isEmpty()) {
             System.out.println("확정 가능한 주문이 없습니다.");
             CommonView.pauseScreen(sc);
             return;
@@ -175,7 +199,7 @@ public class MyPageView {
 
         try {
             int ordersId = Integer.parseInt(input);
-            Orders order = PurchaseView.findOrderById(orders, ordersId);
+            Orders order = PurchaseView.findOrderById(confirmableOrders, ordersId);
 
             if (order != null) {
                 PurchaseView.printConfirmPurchaseScreen(order);
@@ -183,8 +207,9 @@ public class MyPageView {
 
                 String confirm = sc.nextLine().trim();
                 if ("1".equals(confirm)) {
-                    System.out.println("\n[TODO] 거래 확정 처리 - Controller/Service 연동 예정");
+                	ordersController.confirmTrade(order.getOrdersId());
                     CommonView.printSuccessMessage("거래 확정 완료");
+                    CommonView.pauseScreen(sc);
                     return;
                 } else if ("0".equals(confirm)) {
                     System.out.println("\n거래 확정을 취소했습니다.");
@@ -196,6 +221,9 @@ public class MyPageView {
             }
         } catch (NumberFormatException e) {
             CommonView.printInvalidNumberMessage();
+        } catch (SQLException e) {
+        	System.out.println("\n❌ 거래 확정 처리 중 오류가 발생했습니다: " + e.getMessage());
+            CommonView.pauseScreen(sc);
         }
     }
 
@@ -203,43 +231,59 @@ public class MyPageView {
      * 취소 요청 (SCR-013)
      */
     private void requestOrderCancel(List<Orders> orders) {
-        // DAO에서 취소 요청 가능한 주문만 조회해올 예정
         PurchaseView.printCancelRequestHeader();
-        PurchaseView.printSimpleOrderList(orders);
+        
+        // 취소/요청이 가능한 상태는 PENDING(4) 또는 SHIPPING(5)입니다.
+        List<Orders> cancelableOrders = new java.util.ArrayList<>();
+        for (Orders o : orders) {
+            if (o.getStatusId() == 4 || o.getStatusId() == 5) {
+                cancelableOrders.add(o);
+            }
+        }
 
-        if (orders.isEmpty()) {
-            System.out.println("취소 요청 가능한 주문이 없습니다.");
+        if (cancelableOrders.isEmpty()) {
+            System.out.println("취소 가능한 주문이 없습니다.");
             CommonView.pauseScreen(sc);
             return;
         }
 
-        System.out.println();
-        System.out.print("번호 > ");
+        PurchaseView.printSimpleOrderList(cancelableOrders);
+
+        System.out.print("\n번호 > ");
         String input = sc.nextLine().trim();
 
         try {
             int ordersId = Integer.parseInt(input);
-            Orders order = PurchaseView.findOrderById(orders, ordersId);
+            Orders order = PurchaseView.findOrderById(cancelableOrders, ordersId);
 
             if (order != null) {
-                PurchaseView.printCancelRequestScreen(order);
-                System.out.print("  선택 > ");
-
-                String confirm = sc.nextLine().trim();
-                if ("1".equals(confirm)) {
-                    System.out.println("\n[TODO] 취소 요청 처리 - Controller/Service 연동 예정");
-                    CommonView.printSuccessMessage("취소 요청 완료", "관리자 검토 후 환불 진행");
-                    return;
-                } else if ("0".equals(confirm)) {
-                    System.out.println("\n취소 요청을 취소했습니다.");
-                } else {
-                    CommonView.printInvalidInputMessage();
+                // 1. 배송 전 (PENDING : 4) -> 즉시 취소 및 환불
+                if (order.getStatusId() == 4) {
+                    System.out.println("\n[배송 전 취소] 즉시 취소가 가능한 주문입니다.");
+                    System.out.print("정말 취소하시겠습니까? (1.확인  0.취소) > ");
+                    if ("1".equals(sc.nextLine().trim())) {
+                        // 관리자 개입 없이 즉시 환불 처리 (cancelComplete 재활용)
+                        ordersController.cancelComplete(order.getOrdersId());
+                        CommonView.printSuccessMessage("즉시 취소 완료", "결제 금액이 전액 환불되었습니다.");
+                    }
+                } 
+                // 2. 배송 중 (SHIPPING : 5) -> 취소 요청 및 중재 대기
+                else if (order.getStatusId() == 5) {
+                    System.out.println("\n[배송 후 취소] 이미 상품이 발송되었습니다.");
+                    System.out.println("취소 요청 시 판매자 동의가 필요합니다.");
+                    System.out.print("취소를 요청하시겠습니까? (1.확인  0.취소) > ");
+                    if ("1".equals(sc.nextLine().trim())) {
+                        // 상태를 6(CANCEL_REQUEST)으로 변경
+                        ordersController.cancleRequest(order.getOrdersId());
+                        CommonView.printSuccessMessage("취소 요청 완료", "판매자 확인 후 처리가 진행됩니다.");
+                    }
                 }
+                CommonView.pauseScreen(sc);
             } else {
-                System.out.println("해당 주문을 찾을 수 없습니다.");
+                System.out.println("목록에 있는 번호를 선택해주세요.");
             }
-        } catch (NumberFormatException e) {
-            CommonView.printInvalidNumberMessage();
+        } catch (Exception e) {
+            System.out.println("오류 발생: " + e.getMessage());
         }
     }
 
@@ -295,29 +339,55 @@ public class MyPageView {
      */
     private void viewSaleHistory() {
         while (true) {
-            // 샘플 데이터 가져오기 (추후 Controller를 통해 실제 데이터 조회)
-            List<Orders> ongoingOrders = getSampleOngoingOrders();
-            List<Orders> completedOrders = getSampleCompletedOrders();
+            try {
+                String userId = SessionManager.getCurrentUserId();
+                List<Orders> allSales = ordersController.getSalesBySellerId(userId);
 
-            // SaleView를 사용하여 판매 현황 출력
-            SaleView.printSaleHistory(ongoingOrders, completedOrders);
+                List<Orders> ongoingOrders = new java.util.ArrayList<>();
+                List<Orders> completedOrders = new java.util.ArrayList<>();
 
-            String menu = sc.nextLine().trim();
+                for (Orders order : allSales) {
+                    int status = order.getStatusId();
+                    // 4:대기중, 5:배송중, 6:취소요청
+                    if (status == 4 || status == 5 || status == 6) {
+                        ongoingOrders.add(order);
+                    } else {
+                        completedOrders.add(order);
+                    }
+                }
 
-            switch (menu) {
-                case "1":
-                    processShipping(ongoingOrders);
-                    break;
-                case "2":
-                    processCancelRequest(ongoingOrders);
-                    break;
-                case "3":
-                    viewAllSaleHistory();
-                    break;
-                case "0":
-                    return;
-                default:
-                    System.out.println("잘못된 입력입니다.");
+                // 1. 데이터를 먼저 출력합니다 (SaleView 안의 메뉴 가이드는 지우는 것을 권장)
+                SaleView.printSaleHistory(ongoingOrders, completedOrders);
+
+                // 2. MyPageView에서 관리하는 통합 메뉴
+                System.out.println("\n  [ 메뉴 선택 ]");
+                System.out.println("  1. 배송 시작 처리");
+                System.out.println("  2. 취소 요청 처리 (동의/거절)");
+                System.out.println("  3. 전체 판매 내역 보기");
+                System.out.println("  0. 돌아가기");
+                System.out.print("\n  선택 > ");
+                
+                String menu = sc.nextLine().trim();
+
+                switch (menu) {
+                    case "1":
+                        processShipping(ongoingOrders);
+                        break;
+                    case "2":
+                        processCancelRequest(ongoingOrders);
+                        break;
+                    case "3":
+                        viewAllSaleHistory(allSales);
+                        break;
+                    case "0":
+                        return; // 마이페이지 메인으로 돌아감
+                    default:
+                        System.out.println("잘못된 입력입니다.");
+                }
+            } catch (java.sql.SQLException e) {
+                System.out.println("\n❌ 판매 내역 조회 중 오류 발생: " + e.getMessage());
+                CommonView.waitForBack(sc);
+                return;
             }
         }
     }
@@ -325,17 +395,26 @@ public class MyPageView {
     /**
      * 배송 처리
      */
+ 
     private void processShipping(List<Orders> orders) {
-        // DAO에서 배송 처리 가능한 주문(PENDING)만 조회해올 예정
+        // 1. 상태가 4(PENDING, 대기중)인 주문만 필터링
+        List<Orders> pendingOrders = new java.util.ArrayList<>();
+        for (Orders o : orders) {
+            if (o.getStatusId() == 4) {
+                pendingOrders.add(o);
+            }
+        }
+
         SaleView.printShippingProcessHeader();
 
-        if (orders == null || orders.isEmpty()) {
+        if (pendingOrders.isEmpty()) {
             System.out.println("배송 처리 가능한 주문이 없습니다.");
             CommonView.pauseScreen(sc);
             return;
         }
 
-        for (Orders order : orders) {
+        // 전체 리스트가 아닌 필터링된 리스트를 출력
+        for (Orders order : pendingOrders) {
             System.out.println("[" + order.getOrdersId() + "]  " + order.getProductTitle());
         }
 
@@ -345,15 +424,17 @@ public class MyPageView {
 
         try {
             int ordersId = Integer.parseInt(input);
-            Orders order = PurchaseView.findOrderById(orders, ordersId);
+            Orders order = PurchaseView.findOrderById(pendingOrders, ordersId);
 
             if (order != null) {
                 SaleView.printShippingProcessConfirm(order);
                 String confirm = sc.nextLine().trim();
 
                 if ("1".equals(confirm)) {
-                    System.out.println("\n[TODO] 배송 처리 - Controller/Service 연동 예정");
+                    // ⭐ 실제 컨트롤러 호출: 상태를 5(SHIPPING)로 변경
+                    ordersController.startDelivery(order.getOrdersId());
                     CommonView.printSuccessMessage("배송 처리 완료");
+                    CommonView.pauseScreen(sc);
                     return;
                 } else if ("0".equals(confirm)) {
                     System.out.println("\n배송 처리를 취소했습니다.");
@@ -365,67 +446,140 @@ public class MyPageView {
             }
         } catch (NumberFormatException e) {
             CommonView.printInvalidNumberMessage();
+        } catch (java.sql.SQLException e) {
+            // ⭐ DB 에러 방어 로직
+            System.out.println("\n❌ 배송 처리 중 오류 발생: " + e.getMessage());
+            CommonView.pauseScreen(sc);
         }
     }
-
     /**
-     * 취소 요청 처리
+     * 판매자용 취소 요청 관리
      */
     private void processCancelRequest(List<Orders> orders) {
-        // DAO에서 취소 요청 처리 가능한 주문(CANCEL_REQUEST)만 조회해올 예정
+        // 1. 상태가 6(CANCEL_REQUEST)인 주문만 필터링
+        List<Orders> cancelRequested = new java.util.ArrayList<>();
+        for (Orders o : orders) {
+            if (o.getStatusId() == 6) {
+                cancelRequested.add(o);
+            }
+        }
+
         SaleView.printCancelRequestProcessHeader();
 
-        if (orders == null || orders.isEmpty()) {
-            System.out.println("취소 요청 처리 가능한 주문이 없습니다.");
+        if (cancelRequested.isEmpty()) {
+            System.out.println("처리할 취소 요청이 없습니다.");
+            CommonView.pauseScreen(sc);
             return;
         }
 
-        for (Orders order : orders) {
+        for (Orders order : cancelRequested) {
             System.out.println("[" + order.getOrdersId() + "]  " + order.getProductTitle());
         }
 
-        System.out.println();
-        System.out.print("번호 > ");
+        System.out.print("\n번호 > ");
         String input = sc.nextLine().trim();
 
         try {
             int ordersId = Integer.parseInt(input);
-            Orders order = PurchaseView.findOrderById(orders, ordersId);
+            Orders order = PurchaseView.findOrderById(cancelRequested, ordersId);
 
             if (order != null) {
-                SaleView.printCancelRequestProcessConfirm(order);
+                // 판매자용 확인 화면 출력 (1. 동의-환불, 2. 거절-관리자 개입 요청)
+                SaleView.printSellerCancelDecisionScreen(order); 
                 String confirm = sc.nextLine().trim();
 
                 if ("1".equals(confirm)) {
-                    System.out.println("\n[TODO] 취소 승인 처리 - Controller/Service 연동 예정");
-                    CommonView.printSuccessMessage("취소 승인 완료", "구매자에게 환불 처리됩니다.");
-                    CommonView.pauseScreen(sc);
+                    // 판매자가 직접 동의 -> 바로 환불 프로세스 진행
+                    ordersController.cancelComplete(order.getOrdersId());
+                    CommonView.printSuccessMessage("취소 승인 완료", "구매자에게 환불되었습니다.");
                 } else if ("2".equals(confirm)) {
-                    System.out.println("\n[TODO] 취소 거부 처리 - Controller/Service 연동 예정");
-                    CommonView.printSuccessMessage("취소 거부 완료", "거래가 계속 진행됩니다.");
-                    CommonView.pauseScreen(sc);
-                } else if ("0".equals(confirm)) {
-                    System.out.println("\n취소 요청 처리를 취소했습니다.");
+                    // 판매자가 거절 -> 상태는 6으로 유지하고 관리자에게 알림만 보냄
+                    // (필요하다면 별도의 '분쟁 중' 상태를 만들 수도 있지만, 일단은 6 유지)
+                    System.out.println("\n취소를 거절하셨습니다. 관리자가 해당 건을 검토할 예정입니다.");
+                    // ordersController.requestAdminIntervention(order.getOrdersId()); // [선택사항] 관리자 알림 로직
                 } else {
-                    CommonView.printInvalidInputMessage();
+                    System.out.println("취소 요청 처리를 중단합니다.");
                 }
-            } else {
-                System.out.println("해당 주문을 찾을 수 없습니다.");
+                CommonView.pauseScreen(sc);
             }
-        } catch (NumberFormatException e) {
-            CommonView.printInvalidNumberMessage();
+        } catch (Exception e) {
+            System.out.println("오류 발생: " + e.getMessage());
         }
     }
-
+//    /**
+//     * 취소 요청 처리
+//     */
+//    private void proceprocessCancelRequestssCancelRequest(List<Orders> orders) {
+//        // 1. 상태가 6(CANCEL_REQUEST, 취소 요청)인 주문만 필터링
+//        List<Orders> cancelRequested = new java.util.ArrayList<>();
+//        for (Orders o : orders) {
+//            if (o.getStatusId() == 6) {
+//                cancelRequested.add(o);
+//            }
+//        }
+//
+//        SaleView.printCancelRequestProcessHeader();
+//
+//        if (cancelRequested.isEmpty()) {
+//            System.out.println("취소 요청 처리 가능한 주문이 없습니다.");
+//            CommonView.pauseScreen(sc);
+//            return;
+//        }
+//
+//        // 필터링된 리스트 출력
+//        for (Orders order : cancelRequested) {
+//            System.out.println("[" + order.getOrdersId() + "]  " + order.getProductTitle());
+//        }
+//
+//        System.out.println();
+//        System.out.print("번호 > ");
+//        String input = sc.nextLine().trim();
+//
+//        try {
+//            int ordersId = Integer.parseInt(input);
+//            Orders order = PurchaseView.findOrderById(cancelRequested, ordersId);
+//
+//            if (order != null) {
+//                SaleView.printCancelRequestProcessConfirm(order);
+//                String confirm = sc.nextLine().trim();
+//
+//                if ("1".equals(confirm)) {
+//                    // ⭐ 1. 취소 승인: 상태를 7(CANCEL_COMPLETED)로 변경 및 환불 로직
+//                    ordersController.cancelComplete(order.getOrdersId());
+//                    CommonView.printSuccessMessage("취소 승인 완료", "구매자에게 환불 처리됩니다.");
+//                    CommonView.pauseScreen(sc);
+//                } else if ("2".equals(confirm)) {
+//                    // ⭐ 2. 취소 거부: 상태를 8(CANCEL_REJECTED)로 변경
+//                    ordersController.rejectCancel(order.getOrdersId());
+//                    CommonView.printSuccessMessage("취소 거부 완료", "거래가 계속 진행됩니다.");
+//                    CommonView.pauseScreen(sc);
+//                } else if ("0".equals(confirm)) {
+//                    System.out.println("\n취소 요청 처리를 취소했습니다.");
+//                } else {
+//                    CommonView.printInvalidInputMessage();
+//                }
+//            } else {
+//                System.out.println("해당 주문을 찾을 수 없습니다.");
+//            }
+//        } catch (NumberFormatException e) {
+//            CommonView.printInvalidNumberMessage();
+//        } catch (java.sql.SQLException e) {
+//            // ⭐ DB 에러 방어 로직
+//            System.out.println("\n❌ 처리 중 오류 발생: " + e.getMessage());
+//            CommonView.pauseScreen(sc);
+//        }
+//    }
     /**
      * 전체 판매 이력 조회
      */
-    private void viewAllSaleHistory() {
-        // 샘플 데이터 가져오기 (추후 Controller를 통해 실제 데이터 조회)
-        List<Orders> allOrders = getSampleAllSaleOrders();
-
-        // SaleView를 사용하여 전체 판매 이력 출력
-        SaleView.printAllSaleHistory(allOrders);
+    private void viewAllSaleHistory(List<Orders> allSales) {
+        // 더 이상 샘플 데이터를 부르지 않고, 전달받은 실제 리스트를 사용합니다.
+        if (allSales == null || allSales.isEmpty()) {
+            System.out.println("\n판매 내역이 존재하지 않습니다.");
+        } else {
+            // SaleView에 만들어둔 전체 출력 메서드 호출
+            SaleView.printAllSaleHistory(allSales); 
+        }
 
         CommonView.waitForBack(sc);
     }

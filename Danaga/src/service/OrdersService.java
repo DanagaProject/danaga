@@ -32,4 +32,6 @@ public interface OrdersService {
     
     // 8. 취소 거절 및 강제 구매 확정 (먹튀 분쟁 조정 - 관리자용)
     void adminForceTrade(int orderId, String userRole) throws SQLException;
+    
+    List<Orders> getSalesBySellerId(String sellerId) throws java.sql.SQLException;
 }
