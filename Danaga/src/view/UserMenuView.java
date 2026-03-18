@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import controller.NotificationController;
 import controller.ProductController;
 
 /**
@@ -16,10 +17,12 @@ import controller.ProductController;
 public class UserMenuView {
     private Scanner sc;
     private MyPageView myPageView;
+    private final NotificationController notificationController;
 
     public UserMenuView(Scanner sc) {
         this.sc = sc;
         this.myPageView = new MyPageView(sc);
+        this.notificationController = new NotificationController();
     }
 
     /**
@@ -31,8 +34,10 @@ public class UserMenuView {
             System.out.println("  💻  중고 컴퓨터 거래 사이트");
             System.out.println("════════════════════════════════════════");
             System.out.println("  👤  " + SessionManager.getCurrentUserId() + " 님 환영합니다!");
+            int unreadCount = notificationController.getUnreadCount(SessionManager.getCurrentUserId());
+            String alarmDisplay = unreadCount > 0 ? "🔔  새 알림 " + unreadCount + "건" : "🔔  알림 0건";
             System.out.println("  💰  잔액:  " + BalanceView.formatBalance(SessionManager.getCurrentUser().getBalance())
-                    + "  |  🔔  알림");
+                    + "  |  " + alarmDisplay);
             System.out.println("════════════════════════════════════════");
             System.out.println("  [상품 조회]");
             System.out.println("  1.  상품 전체 목록 보기");

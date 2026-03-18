@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import controller.CodeController;
+import controller.NotificationController;
 import controller.OrdersController;
 import controller.ProductController;
 import controller.UserController;
@@ -25,12 +26,14 @@ public class MyPageView {
     private final CodeController codeController;
     private final OrdersController ordersController;
     private final UserController userController;
-    
+    private final NotificationController notificationController;
+
     public MyPageView(Scanner sc) {
         this.sc = sc;
         this.codeController = new CodeController();
         this.ordersController = new OrdersController();
         this.userController = new UserController();
+        this.notificationController = new NotificationController();
     }
 
     /**
@@ -38,12 +41,13 @@ public class MyPageView {
      */
     public void printMyPage() {
         while (true) {
+        	int unreadCount = notificationController.getUnreadCount(SessionManager.getCurrentUserId());
             System.out.println("\n════════════════════════════════════════");
             System.out.println("  👤  마이페이지");
             System.out.println("════════════════════════════════════════");
             System.out.println("  사용자: " + SessionManager.getCurrentUserId() + " 님");
-            System.out.println("  💰  잔액:  " + BalanceView.formatBalance(SessionManager.getCurrentUser().getBalance())
-                    + "  |  🔔  알림");
+            String alarmDisplay = unreadCount > 0 ? "🔔  새 알림 " + unreadCount + "건" : "🔔  알림 0건";
+            System.out.println("  💰  잔액:  " + BalanceView.formatBalance(SessionManager.getCurrentUser().getBalance())+ "  |  " + alarmDisplay);
             System.out.println("════════════════════════════════════════");
             System.out.println("  [구매]");
             System.out.println("  1.  내 구매 현황");
@@ -1542,9 +1546,7 @@ public class MyPageView {
      */
     private void viewNotifications() {
         while (true) {
-            // TODO: Controller 연동 - 전체 알림 조회
-            // List<Notification> list = notificationController.getNotifications(SessionManager.getCurrentUserId());
-            List<Notification> list = getSampleNotifications();
+            List<Notification> list = notificationController.getNotifications(SessionManager.getCurrentUserId());
 
             NotificationView.printNotificationList(list);
             String input = sc.nextLine().trim();
@@ -1566,9 +1568,7 @@ public class MyPageView {
      */
     private void viewUnreadNotifications() {
         while (true) {
-            // TODO: Controller 연동 - 안읽은 알림 조회
-            // List<Notification> unreadList = notificationController.getUnreadNotifications(SessionManager.getCurrentUserId());
-            List<Notification> unreadList = getSampleUnreadNotifications();
+            List<Notification> unreadList = notificationController.getUnreadNotifications(SessionManager.getCurrentUserId());
 
             NotificationView.printUnreadNotificationList(unreadList);
             String input = sc.nextLine().trim();
@@ -1579,43 +1579,14 @@ public class MyPageView {
 
             try {
                 int notificationId = Integer.parseInt(input);
-
-                // TODO: Controller 연동 - 읽음 처리
-                // notificationController.markAsRead(notificationId);
-
-                CommonView.printSuccessMessage("알림을 읽음 처리했습니다.");
+                boolean success = notificationController.markAsRead(notificationId);
+                if (success) {
+                    CommonView.printSuccessMessage("알림을 읽음 처리했습니다.");
+                }
             } catch (NumberFormatException e) {
                 System.out.println("숫자를 입력해주세요.");
             }
         }
-    }
-
-    /**
-     * 샘플 전체 알림 데이터 (View 테스트용)
-     * 추후 Controller/Service를 통해 실제 데이터로 대체
-     */
-    private List<Notification> getSampleNotifications() {
-        List<Notification> list = new ArrayList<>();
-        list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", "0", "2024-03-10"));
-        list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", "0", "2024-03-09"));
-        list.add(new Notification(3, SessionManager.getCurrentUserId(),
-                "[시스템] 다나가에 오신 것을 환영합니다!", "1", "2024-03-01"));
-        return list;
-    }
-
-    /**
-     * 샘플 안읽은 알림 데이터 (View 테스트용)
-     * 추후 Controller/Service를 통해 실제 데이터로 대체
-     */
-    private List<Notification> getSampleUnreadNotifications() {
-        List<Notification> list = new ArrayList<>();
-        list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[구매알림] \"LG 그램 17인치 노트북\" 구매가 완료되었습니다.", "0", "2024-03-10"));
-        list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[판매알림] \"RTX 4070 Ti SUPER\" 상품이 구매 확정되었습니다.", "0", "2024-03-09"));
-        return list;
     }
 
     /**

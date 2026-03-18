@@ -30,6 +30,11 @@ public interface UserDAO {
     User selectById(User user) throws DatabaseException;
 
     /**
+     * 전체 회원 목록 조회 (관리자 제외)
+     */
+    List<User> selectAllUsers() throws DatabaseException;
+
+    /**
      * 차단된 회원 목록 조회 (status_id = 13, code 테이블의 BANNED)
      */
     List<User> selectBlockedUsers() throws DatabaseException;

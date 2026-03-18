@@ -6,11 +6,14 @@ import dto.Orders;
 import dto.Product;
 import dto.User;
 import util.SessionManager;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import controller.AuthController;
 import controller.CodeController;
+import controller.NotificationController;
 import controller.OrdersController;
 import controller.ProductController;
 
@@ -22,9 +25,14 @@ import controller.ProductController;
 public class AdminMenuView {
     private Scanner sc;
     private final OrdersController ordersController;
+    private final AuthController authController;
+    private final NotificationController notificationController;
+
     public AdminMenuView(Scanner sc) {
         this.sc = sc;
         this.ordersController = new OrdersController();
+        this.authController = new AuthController();
+        this.notificationController = new NotificationController();
     }
 
     // ============================================================================
@@ -36,13 +44,12 @@ public class AdminMenuView {
      */
     public void printAdminMenu() {
         while (true) {
-            // TODO: Controller 연동 - 안읽은 알림 개수 조회
-            // int unreadCount = notificationController.getUnreadCount(SessionManager.getCurrentUserId());
-            int unreadCount = getSampleUnreadNotifications().size();
+            int unreadCount = notificationController.getUnreadCount(SessionManager.getCurrentUserId());
 
             System.out.println("\n════════════════════════════════════════");
             System.out.println("  💻  중고 컴퓨터 거래");
-            System.out.println("  🔧  관리자       🔔  새 알림 " + unreadCount + "건");
+            String alarmDisplay = unreadCount > 0 ? "🔔  새 알림 " + unreadCount + "건" : "🔔  알림 0건";
+            System.out.println("  🔧  관리자       " + alarmDisplay);
             System.out.println("════════════════════════════════════════");
             System.out.println("  [상품 조회]");
             System.out.println("  1. 상품목록  2. 카테고리 검색  3. 상품명 검색");
@@ -341,9 +348,7 @@ public class AdminMenuView {
      */
     private void manageUsers() {
         while (true) {
-            // TODO: Controller 연동 - 전체 회원 목록 조회
-            // List<User> users = adminController.getAllUsers();
-            List<User> users = getSampleUsers();
+            List<User> users = authController.getAllUsers();
 
             AdminUserView.printUserList(users);
             String input = sc.nextLine().trim();
@@ -356,9 +361,7 @@ public class AdminMenuView {
                 return;
             }
 
-            // TODO: Controller 연동 - userId로 회원 상세 조회
-            // User selectedUser = adminController.getUserById(input);
-            User selectedUser = getSampleUserById(input);
+            User selectedUser = authController.getUserById(input);
 
             if (selectedUser == null) {
                 System.out.println("해당 아이디를 찾을 수 없습니다.");
@@ -371,15 +374,17 @@ public class AdminMenuView {
             if ("1".equals(confirm)) {
                 boolean isBanned = "BANNED".equals(selectedUser.getStatus());
                 if (isBanned) {
-                    // TODO: Controller 연동 - 차단 해제
-                    // adminController.unbanUser(selectedUser.getUserId());
-                    CommonView.printSuccessMessage("차단 해제 완료",
-                            selectedUser.getUserId() + " 계정이 정상으로 변경되었습니다.");
+                    boolean success = authController.unblockUser(selectedUser.getUserId());
+                    if (success) {
+                        CommonView.printSuccessMessage("차단 해제 완료",
+                                selectedUser.getUserId() + " 계정이 정상으로 변경되었습니다.");
+                    }
                 } else {
-                    // TODO: Controller 연동 - 차단
-                    // adminController.banUser(selectedUser.getUserId());
-                    CommonView.printSuccessMessage("차단 완료",
-                            selectedUser.getUserId() + " 계정이 차단되었습니다.");
+                    boolean success = authController.blockUser(selectedUser.getUserId());
+                    if (success) {
+                        CommonView.printSuccessMessage("차단 완료",
+                                selectedUser.getUserId() + " 계정이 차단되었습니다.");
+                    }
                 }
                 return;
             } else if ("0".equals(confirm)) {
@@ -623,9 +628,7 @@ public class AdminMenuView {
      */
     private void viewNotifications() {
         while (true) {
-            // TODO: Controller 연동 - 전체 알림 조회
-            // List<Notification> list = notificationController.getNotifications(SessionManager.getCurrentUserId());
-            List<Notification> list = getSampleNotifications();
+            List<Notification> list = notificationController.getNotifications(SessionManager.getCurrentUserId());
 
             NotificationView.printNotificationList(list);
             String input = sc.nextLine().trim();
@@ -648,9 +651,7 @@ public class AdminMenuView {
      */
     private void viewUnreadNotifications() {
         while (true) {
-            // TODO: Controller 연동 - 안읽은 알림 조회
-            // List<Notification> unreadList = notificationController.getUnreadNotifications(SessionManager.getCurrentUserId());
-            List<Notification> unreadList = getSampleUnreadNotifications();
+            List<Notification> unreadList = notificationController.getUnreadNotifications(SessionManager.getCurrentUserId());
 
             NotificationView.printUnreadNotificationList(unreadList);
             String input = sc.nextLine().trim();
@@ -661,9 +662,10 @@ public class AdminMenuView {
 
             try {
                 int notificationId = Integer.parseInt(input);
-                // TODO: Controller 연동 - 읽음 처리
-                // notificationController.markAsRead(notificationId);
-                CommonView.printSuccessMessage("알림을 읽음 처리했습니다.");
+                boolean success = notificationController.markAsRead(notificationId);
+                if (success) {
+                    CommonView.printSuccessMessage("알림을 읽음 처리했습니다.");
+                }
             } catch (NumberFormatException e) {
                 System.out.println("숫자를 입력해주세요.");
             }
@@ -737,28 +739,6 @@ public class AdminMenuView {
     }
 
     /**
-     * 회원 샘플 데이터
-     * - ACTIVE (정상) / BANNED (차단) 회원 포함
-     */
-    private List<User> getSampleUsers() {
-        List<User> users = new ArrayList<>();
-
-        User u1 = new User("hong123", "pass", 1000000, 12, "USER");
-        u1.setStatus("ACTIVE");
-        users.add(u1);
-
-        User u2 = new User("kim456", "pass", 500000, 12, "USER");
-        u2.setStatus("ACTIVE");
-        users.add(u2);
-
-        User u3 = new User("lee789", "pass", 0, 13, "USER");
-        u3.setStatus("BANNED");
-        users.add(u3);
-
-        return users;
-    }
-
-    /**
      * 카테고리 샘플 데이터
      */
     private List<Category> getSampleCategories() {
@@ -772,31 +752,6 @@ public class AdminMenuView {
         return categories;
     }
 
-    /**
-     * 전체 알림 샘플 데이터 (View 테스트용)
-     */
-    private List<Notification> getSampleNotifications() {
-        List<Notification> list = new ArrayList<>();
-        list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[관리자] 취소요청 1건이 접수되었습니다.", "0", "2024-03-15"));
-        list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[관리자] 신규 회원가입 2건이 확인되었습니다.", "0", "2024-03-14"));
-        list.add(new Notification(3, SessionManager.getCurrentUserId(),
-                "[시스템] 관리자 로그인 알림.", "1", "2024-03-01"));
-        return list;
-    }
-
-    /**
-     * 안읽은 알림 샘플 데이터 (View 테스트용)
-     */
-    private List<Notification> getSampleUnreadNotifications() {
-        List<Notification> list = new ArrayList<>();
-        list.add(new Notification(1, SessionManager.getCurrentUserId(),
-                "[관리자] 취소요청 1건이 접수되었습니다.", "0", "2024-03-15"));
-        list.add(new Notification(2, SessionManager.getCurrentUserId(),
-                "[관리자] 신규 회원가입 2건이 확인되었습니다.", "0", "2024-03-14"));
-        return list;
-    }
 
     // ============================================================================
     // 샘플 단건 조회 (Controller.getXxxById() 동작을 시뮬레이션 - 추후 Controller로 대체)
@@ -810,20 +765,6 @@ public class AdminMenuView {
         for (Orders order : getSampleCancelOrders()) {
             if (order.getOrdersId() == ordersId) {
                 return order;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * userId로 회원 단건 조회 샘플
-     * TODO: adminController.getUserById(userId) 로 교체
-     */
-    private User getSampleUserById(String userId) {
-        if (userId == null) return null;
-        for (User user : getSampleUsers()) {
-            if (userId.equals(user.getUserId())) {
-                return user;
             }
         }
         return null;

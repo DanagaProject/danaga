@@ -187,6 +187,51 @@ public class UserDAOImpl implements UserDAO {
     }
 
     /**
+     * 전체 회원 목록 조회 (관리자 제외)
+     * code 테이블과 JOIN하여 status_id에 해당하는 value를 status로 조회
+     * @return 전체 회원 목록 (role = 'USER')
+     * @throws DatabaseException DB 오류 발생 시
+     */
+    @Override
+    public List<User> selectAllUsers() throws DatabaseException {
+        String sql = "SELECT u.user_id, u.password, u.balance, u.status_id, c.name AS status, u.role " +
+                     "FROM user u " +
+                     "INNER JOIN code c ON u.status_id = c.code_id " +
+                     "WHERE u.role = 'USER' " +
+                     "ORDER BY u.user_id";
+
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        List<User> users = new ArrayList<>();
+
+        try {
+            con = DBUtil.getConnection();
+            pstmt = con.prepareStatement(sql);
+
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                User user = new User(
+                        rs.getString("user_id"),
+                        rs.getString("password"),
+                        rs.getInt("balance"),
+                        rs.getInt("status_id"),
+                        rs.getString("role"));
+                user.setStatus(rs.getString("status"));
+                users.add(user);
+            }
+
+            return users;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("전체 회원 목록 조회 중 DB 오류 발생: " + e.getMessage());
+        } finally {
+            DBUtil.close(con, pstmt, rs);
+        }
+    }
+
+    /**
      * 차단된 회원 목록 조회 (status_id = 13, code 테이블의 BANNED)
      * code 테이블과 JOIN하여 status_id에 해당하는 value를 status로 조회
      * @return 차단된 회원 목록

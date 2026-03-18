@@ -19,7 +19,7 @@ public class NotificationDAOImpl implements NotificationDAO {
     public int insertNotification(Notification notification) throws DatabaseException {
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "INSERT INTO notifications (user_id, message, is_read) VALUES (?, ?, '0')";
+        String sql = "INSERT INTO notification (user_id, message, is_read) VALUES (?, ?, '0')";
 
         try {
             con = DBUtil.getConnection();
@@ -39,7 +39,7 @@ public class NotificationDAOImpl implements NotificationDAO {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        String sql = "SELECT * FROM notifications WHERE notification_id = ?";
+        String sql = "SELECT * FROM notification WHERE notification_id = ?";
 
         try {
             con = DBUtil.getConnection();
@@ -70,7 +70,7 @@ public class NotificationDAOImpl implements NotificationDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         List<Notification> list = new ArrayList<>();
-        String sql = "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM notification WHERE user_id = ? ORDER BY created_at DESC";
 
         try {
             con = DBUtil.getConnection();
@@ -101,7 +101,7 @@ public class NotificationDAOImpl implements NotificationDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         List<Notification> list = new ArrayList<>();
-        String sql = "SELECT * FROM notifications WHERE user_id = ? AND is_read = '0' ORDER BY created_at DESC";
+        String sql = "SELECT * FROM notification WHERE user_id = ? AND is_read = '0' ORDER BY created_at DESC";
 
         try {
             con = DBUtil.getConnection();
@@ -130,7 +130,7 @@ public class NotificationDAOImpl implements NotificationDAO {
     public int markAsRead(int notificationId) throws DatabaseException {
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "UPDATE notifications SET is_read = '1' WHERE notification_id = ?";
+        String sql = "UPDATE notification SET is_read = '1' WHERE notification_id = ?";
 
         try {
             con = DBUtil.getConnection();
@@ -148,7 +148,7 @@ public class NotificationDAOImpl implements NotificationDAO {
     public int updateNotification(Notification notification) throws DatabaseException {
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "UPDATE notifications SET message = ? WHERE notification_id = ?";
+        String sql = "UPDATE notification SET message = ? WHERE notification_id = ?";
 
         try {
             con = DBUtil.getConnection();
@@ -167,7 +167,7 @@ public class NotificationDAOImpl implements NotificationDAO {
     public int deleteNotification(int notificationId) throws DatabaseException {
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "DELETE FROM notifications WHERE notification_id = ?";
+        String sql = "DELETE FROM notification WHERE notification_id = ?";
 
         try {
             con = DBUtil.getConnection();
@@ -185,7 +185,7 @@ public class NotificationDAOImpl implements NotificationDAO {
     public int deleteNotificationsByUserId(String userId) throws DatabaseException {
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "DELETE FROM notifications WHERE user_id = ?";
+        String sql = "DELETE FROM notification WHERE user_id = ?";
 
         try {
             con = DBUtil.getConnection();
