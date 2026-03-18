@@ -495,6 +495,7 @@ public class MyPageView {
                 } else if ("2".equals(confirm)) {
                     // 판매자가 거절 -> 상태는 6으로 유지하고 관리자에게 알림만 보냄
                     // (필요하다면 별도의 '분쟁 중' 상태를 만들 수도 있지만, 일단은 6 유지)
+                	ordersController.rejectCancel(ordersId);
                     System.out.println("\n취소를 거절하셨습니다. 관리자가 해당 건을 검토할 예정입니다.");
                     // ordersController.requestAdminIntervention(order.getOrdersId()); // [선택사항] 관리자 알림 로직
                 } else {

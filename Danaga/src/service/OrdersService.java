@@ -27,11 +27,15 @@ public interface OrdersService {
     // 6. 취소 완료 및 환불
     void cancelComplete(int orderId) throws SQLException;
     
-    // 7. 관리자 직권 강제 취소 및 환불 집행
+    // 7. 취소 거절
+    int rejectCancel(int orderId) throws SQLException;
+    // 8. 관리자 직권 강제 취소 및 환불 집행
     void adminForceCancel(int orderId, String userRole) throws SQLException;
     
-    // 8. 취소 거절 및 강제 구매 확정 (먹튀 분쟁 조정 - 관리자용)
+    // 9. 취소 거절 및 강제 구매 확정 (먹튀 분쟁 조정 - 관리자용)
     void adminForceTrade(int orderId, String userRole) throws SQLException;
     
-    List<Orders> getSalesBySellerId(String sellerId) throws java.sql.SQLException;
+    List<Orders> getSalesBySellerId(String sellerId) throws SQLException;
+    
+    List<Orders> getOrdersForAdmin() throws SQLException;
 }

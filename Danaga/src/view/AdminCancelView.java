@@ -58,7 +58,7 @@ public class AdminCancelView {
         System.out.println("  처리구분  :  " + getCancelProcessTypeLabel(order.getStatus()));
         System.out.println("  상태      :  " + order.getStatus());
         System.out.println("════════════════════════════════════════");
-        System.out.println("  1. 취소승인(환불)    0. 돌아가기");
+        System.out.println("  1. 취소승인(환불)  2. 요청 기각 (판매자 정산/거래재개)  0. 돌아가기");
         System.out.println("════════════════════════════════════════");
         System.out.print("  선택 > ");
     }
