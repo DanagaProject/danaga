@@ -44,5 +44,8 @@ public interface OrdersDAO {
 	 */
 	int cancelComplete(Orders order) throws SQLException;
 	
+	List<Orders> getOrdersForAdmin() throws SQLException;
+	
+	int rejectCancel(int orderId) throws SQLException;
 	
 }

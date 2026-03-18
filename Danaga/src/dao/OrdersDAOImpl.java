@@ -91,106 +91,83 @@ public class OrdersDAOImpl implements OrdersDAO {
 
 /////////////////////////////// 
 ///    조회
-
 	
-	// 1. 중복 코드를 모두 모아둔 private 공통 메서드 생성
-    public List<Orders> getOrdersListByCondition(String whereColumn, String id) throws SQLException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        List<Orders> list = new java.util.ArrayList<>();
+    private Orders mapOrders(ResultSet rs) throws SQLException {
+        Orders orders = new Orders();
+        orders.setOrdersId(rs.getInt("orders_id"));
+        orders.setProductId(rs.getInt("product_id"));
+        orders.setBuyerId(rs.getString("buyer_id"));
+        orders.setStatusId(rs.getInt("status_id"));
+        
+        
+        try { orders.setCreatedAt(rs.getString("created_at")); } catch (SQLException e) {}
+        
+        orders.setProductTitle(rs.getString("title")); 
+        orders.setProductPrice(rs.getInt("price"));
+        orders.setSellerId(rs.getString("seller_id"));
+        orders.setStatus(rs.getString("status_name"));
+        return orders;
+    }
 
-        try {
-            con = util.DBUtil.getConnection();
-            
-            // whereColumn 매개변수를 통해 buyer_id로 검색할지 seller_id로 검색할지 동적으로 결정합니다.
-            String sql = "SELECT o.orders_id, o.product_id, o.buyer_id, o.status_id, o.created_at, " +
-                         "p.title, p.price, p.seller_id, " +
-                         "c.name as status_name " +
-                         "FROM orders o " +
-                         "JOIN product p ON o.product_id = p.product_id " +
-                         "LEFT JOIN code c ON o.status_id = c.code_id " +
-                         "WHERE " + whereColumn + " = ? " +
-                         "ORDER BY o.orders_id DESC";
-                         
-            ps = con.prepareStatement(sql);
-            ps.setString(1, id);
-            rs = ps.executeQuery();
-            
-            while (rs.next()) {
-                Orders orders = new Orders();
-                orders.setOrdersId(rs.getInt("orders_id"));
-                orders.setProductId(rs.getInt("product_id"));
-                orders.setBuyerId(rs.getString("buyer_id"));
-                orders.setStatusId(rs.getInt("status_id"));
-                orders.setCreatedAt(rs.getString("created_at"));
-                
-                orders.setProductTitle(rs.getString("title")); 
-                orders.setProductPrice(rs.getInt("price"));
-                orders.setSellerId(rs.getString("seller_id"));
-                orders.setStatus(rs.getString("status_name"));
-                
-                list.add(orders);
+    // 2. 관리자 전용: 취소 요청(6) 및 거절(8) 주문 조회 (새로운 SQL 추가)
+    @Override
+    public List<Orders> getOrdersForAdmin() throws SQLException {
+        // ID 필터링 없이 상태 코드 6, 8만 IN 연산자로 조회
+        String sql = getBaseSql() + " WHERE o.status_id IN (6, 8) ORDER BY o.created_at ASC";
+        return executeQuery(sql, null);
+    }
+
+    // 3. 기존 공통 메서드 (구매자/판매자 조회용)
+    public List<Orders> getOrdersListByCondition(String whereColumn, String id) throws SQLException {
+        String sql = getBaseSql() + " WHERE " + whereColumn + " = ? ORDER BY o.orders_id DESC";
+        return executeQuery(sql, id);
+    }
+
+    // 4. [보너스] 쿼리 실행 공통 로직 (executeQuery)
+    private List<Orders> executeQuery(String sql, String param) throws SQLException {
+        List<Orders> list = new java.util.ArrayList<>();
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            if (param != null) ps.setString(1, param);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(mapOrders(rs));
             }
-        } finally {
-            util.DBUtil.close(con, ps, rs);
         }
         return list;
     }
 
-    // 2. 내 구매 현황 조회 (인터페이스 구현부)
+    // 5. 기초 SQL 문 (반복되는 JOIN 문 통합)
+    private String getBaseSql() {
+        return "SELECT o.*, p.title, p.price, p.seller_id, c.name as status_name " +
+               "FROM orders o " +
+               "JOIN product p ON o.product_id = p.product_id " +
+               "LEFT JOIN code c ON o.status_id = c.code_id";
+    }
+
+    // --- 인터페이스 구현부 (한 줄로 종결) ---
+
     @Override
     public List<Orders> selectordersByUserId(String userId) throws SQLException {
-        // buyer_id 컬럼명과 조회할 아이디만 넘겨줍니다.
         return getOrdersListByCondition("o.buyer_id", userId);
     }
 
-    // 3. 내 판매 현황 조회 (인터페이스 구현부)
     @Override
     public List<Orders> selectSalesBySellerId(String sellerId) throws SQLException {
-        // seller_id 컬럼명과 조회할 아이디만 넘겨줍니다.
         return getOrdersListByCondition("p.seller_id", sellerId);
     }
-	@Override
-	public Orders selectOrderById(int orderId) throws SQLException {
-	    Connection con = null;
-	    PreparedStatement ps = null;
-	    ResultSet rs = null;
-	    Orders order = null;
 
-	    try {
-	        con = DBUtil.getConnection();
-	        
-	        String sql = "SELECT o.orders_id, o.product_id, o.buyer_id, o.status_id, " +
-	                     "p.title, p.price, p.seller_id, " +
-	                     "c.name as status_name " +
-	                     "FROM orders o " +
-	                     "JOIN product p ON o.product_id = p.product_id " +
-	                     "LEFT JOIN code c ON o.status_id = c.code_id "+
-	                     "WHERE o.orders_id = ?";
-	                     
-	        ps = con.prepareStatement(sql);
-	        ps.setInt(1, orderId);
-	        rs = ps.executeQuery();
-	        
-	        if (rs.next()) {
-	            order = new Orders();
-	            order.setOrdersId(rs.getInt("orders_id"));
-	            order.setProductId(rs.getInt("product_id"));
-	            order.setBuyerId(rs.getString("buyer_id"));
-	            order.setStatusId(rs.getInt("status_id"));
-	            order.setStatus(rs.getString("status_name"));
-	            order.setProductTitle(rs.getString("title"));
-	            
-	            order.setProductPrice(rs.getInt("price")); 
-	            order.setSellerId(rs.getString("seller_id"));
-	        }
-	    } finally {
-	        DBUtil.close(con, ps, rs);
-	    }
-	    
-	    return order;
-	}
+    @Override
+    public Orders selectOrderById(int orderId) throws SQLException {
+        String sql = getBaseSql() + " WHERE o.orders_id = ?";
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? mapOrders(rs) : null;
+            }
+        }
+    }
+
 	
 	public int startDelivery(int orderId) throws SQLException {
 	    Connection con = null;
@@ -334,6 +311,24 @@ public class OrdersDAOImpl implements OrdersDAO {
 
         return result;
     }
+	public int rejectCancel(int orderId) throws SQLException {
+		int result = 0; // 성공 여부를 담을 변수
+		
+	    try (Connection con = DBUtil.getConnection()) {
+	        con.setAutoCommit(false); // 트랜잭션 시작
+	        
+	        try {
+	            // 1. 주문 상태를 8(거절)로 변경 -> 관리자가 이 상태를 보고 중재함
+	        	result = updateOrdersStatus(con, orderId, 8);
+	            con.commit(); // 확정
+	        } catch (SQLException e) {
+	            con.rollback(); // 에러 시 되돌리기
+	            throw e;
+	        }
+	    }
+	    return result;
+	}
+	
 	
 ////////////////////////////////////////////////////////////////////////////////////
 	public void updateUserBalance(Connection con, String userId, int amount) throws SQLException {

@@ -86,6 +86,11 @@ public class OrdersServiceImpl implements OrdersService {
             throw new SQLException("취소 완료 처리 중 오류가 발생했습니다.");
         }
     }
+    @Override
+    public int rejectCancel(int orderId) throws SQLException {
+        // DAO를 통해 주문 상태를 8(판매자 거절)로 변경
+        return ordersDAO.rejectCancel(orderId);
+    }
     
     @Override
     public void adminForceCancel(int orderId, String userRole) throws SQLException {
@@ -147,5 +152,11 @@ public class OrdersServiceImpl implements OrdersService {
             throw new SQLException("판매자 정보가 유효하지 않습니다.");
         }
         return ordersDAO.selectSalesBySellerId(sellerId);
+    }
+    
+    @Override
+    public List<Orders> getOrdersForAdmin() throws SQLException {
+        // DAO에서 발생한 SQLException이 그대로 컨트롤러로 전달됩니다.
+        return ordersDAO.getOrdersForAdmin();
     }
 }

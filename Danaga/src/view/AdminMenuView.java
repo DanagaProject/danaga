@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import controller.CodeController;
+import controller.OrdersController;
 import controller.ProductController;
 
 /**
@@ -19,9 +21,10 @@ import controller.ProductController;
  */
 public class AdminMenuView {
     private Scanner sc;
-
+    private final OrdersController ordersController;
     public AdminMenuView(Scanner sc) {
         this.sc = sc;
+        this.ordersController = new OrdersController();
     }
 
     // ============================================================================
@@ -228,10 +231,11 @@ public class AdminMenuView {
         while (true) {
             // TODO: Controller 연동 - 취소요청 목록 조회 (CANCEL_REQUEST + CANCEL_REJECTED)
             // List<Orders> cancelOrders = adminController.getCancelRequestOrders();
-            List<Orders> cancelOrders = getSampleCancelOrders();
-
+            List<Orders> cancelOrders = ordersController.getOrdersForAdmin();
+            Orders selectedOrder = null;
             AdminCancelView.printCancelRequestList(cancelOrders);
             String input = sc.nextLine().trim();
+            
 
             if ("0".equals(input)) {
                 return;
@@ -245,8 +249,13 @@ public class AdminMenuView {
                 int ordersId = Integer.parseInt(input);
                 // TODO: Controller 연동 - 주문번호로 취소요청 상세 조회
                 // Orders selectedOrder = adminController.getCancelOrderById(ordersId);
-                Orders selectedOrder = getSampleCancelOrderById(ordersId);
-
+                
+                for (Orders order : cancelOrders) {
+                    if (order.getOrdersId() == ordersId) {
+                        selectedOrder = order;
+                        break;
+                    }
+                }
                 if (selectedOrder == null) {
                     System.out.println("해당 주문을 찾을 수 없습니다.");
                     continue;
@@ -258,8 +267,15 @@ public class AdminMenuView {
                 if ("1".equals(confirm)) {
                     // TODO: Controller 연동 - 취소 승인 처리 (환불)
                     // adminController.approveCancelRequest(ordersId);
+                	ordersController.adminForceCancel(selectedOrder.getOrdersId());
                     CommonView.printSuccessMessage("취소 승인 완료", "구매자에게 자동 환불 처리되었습니다.");
                     return;
+                }else if ("2".equals(confirm)) {
+                    // [판결: 판매자 승] 강제 정산 또는 거래 재개 처리
+                    
+                    ordersController.adminForceTrade(selectedOrder.getOrdersId());
+                    break; 
+                    
                 } else if ("0".equals(confirm)) {
                     // 상세에서 목록으로 돌아가기
                 } else {
