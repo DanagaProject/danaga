@@ -69,6 +69,10 @@ public class OrdersDAOImpl implements OrdersDAO {
 
 	            
 	            this.insertNotification(con, order.getBuyerId(), "상품 구매 신청이 완료되었습니다.");
+	            String sellerId = this.selectSellerIdByOrderId(con, orderId);
+	            if (sellerId != null) {
+	                this.insertNotification(con, sellerId, "등록하신 [" + order.getProductId() + "]번 상품에 새로운 주문이 접수되었습니다.");
+	            }
 
 	            con.commit(); 
 	        }
@@ -314,17 +318,23 @@ public class OrdersDAOImpl implements OrdersDAO {
         return result;
     }
 	public int rejectCancel(int orderId) throws SQLException {
-		int result = 0; // 성공 여부를 담을 변수
-		
+	    int result = 0;
 	    try (Connection con = DBUtil.getConnection()) {
-	        con.setAutoCommit(false); // 트랜잭션 시작
-	        
+	        con.setAutoCommit(false);
 	        try {
-	            // 1. 주문 상태를 8(거절)로 변경 -> 관리자가 이 상태를 보고 중재함
-	        	result = updateOrdersStatus(con, orderId, 8);
-	            con.commit(); // 확정
+	            result = updateOrdersStatus(con, orderId, 8);
+	            
+	            if (result > 0) {
+	                // [추가] 구매자 및 관리자에게 알림 발송
+	                String buyerId = this.selectBuyerIdByOrderId(con, orderId);
+	                if (buyerId != null) {
+	                    this.insertNotification(con, buyerId, "주문번호 [" + orderId + "]의 취소 요청이 거절되었습니다.");
+	                }
+	                this.insertNotification(con, "admin", "주문번호 [" + orderId + "] 취소 거절 발생. 분쟁 조정이 필요합니다.");
+	            }
+	            con.commit();
 	        } catch (SQLException e) {
-	            con.rollback(); // 에러 시 되돌리기
+	            con.rollback();
 	            throw e;
 	        }
 	    }
