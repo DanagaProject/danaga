@@ -18,38 +18,115 @@ public class SaleView {
      * @param ongoingOrders 거래중인 주문 목록
      * @param completedOrders 최근 완료된 주문 목록
      */
-    public static void printSaleHistory(List<Orders> ongoingOrders, List<Orders> completedOrders) {
-        System.out.println("\n════════════════════════════════════════");
-        System.out.println("  💼  내 판매 현황");
-        System.out.println("════════════════════════════════════════");
-        System.out.println();
+	
+	/**
+     * 내 판매 현황 및 상품 관리 출력 (개선 버전)
+     */
+    public static void printSaleHistory(List<Product> myProducts, List<Orders> ongoingOrders, List<Orders> completedOrders) {
+        System.out.println("\n" + "=".repeat(85));
+        System.out.println("  💼  내 판매 상품 관리 및 거래 현황");
+        System.out.println("=".repeat(85));
 
-        // 거래중인 상품
-        System.out.println("[거래중인 상품]");
-        if (ongoingOrders == null || ongoingOrders.isEmpty()) {
-            System.out.println("거래중인 상품이 없습니다.");
+        // 1. [전체 판매중인 상품] 영역
+        System.out.println("\n[전체 판매중인 상품]");
+        System.out.printf("%-6s | %-18s | %-10s | %-12s | %-8s\n", "ID", "상품명(Title)", "가격", "등록일", "상태");
+        System.out.println("-".repeat(85));
+
+        if (myProducts == null || myProducts.isEmpty()) {
+            System.out.println("  등록된 상품이 없습니다.");
         } else {
-            for (Orders order : ongoingOrders) {
-                String statusText = getOrderActionText(order.getStatus());
-                System.out.println("[" + order.getOrdersId() + "]  " +
-                    order.getProductTitle() + "  " + statusText);
+        	for (Product p : myProducts) {
+                String statusText = "";
+                int currentOrderStatus = 0;
+
+                // 1. 진행 중인 주문 또는 완료된 주문에서 이 상품의 상태를 찾음
+                // (ongoingOrders와 completedOrders를 모두 확인하여 가장 최근 상태를 가져옵니다)
+                if (ongoingOrders != null) {
+                    for (Orders o : ongoingOrders) {
+                        if (o.getProductId() == p.getProductId()) {
+                            currentOrderStatus = o.getStatusId();
+                            break; 
+                        }
+                    }
+                }
+                
+                // 만약 진행 중인 주문에 없으면 완료된 주문(7, 9)에서도 확인
+                if (currentOrderStatus == 0 && completedOrders != null) {
+                    for (Orders o : completedOrders) {
+                        if (o.getProductId() == p.getProductId()) {
+                            currentOrderStatus = o.getStatusId();
+                            break;
+                        }
+                    }
+                }
+
+                // 2. 통합 switch-case로 상태 문구 결정
+                if (currentOrderStatus != 0) {
+                    switch (currentOrderStatus) {
+                        case 6:
+                        case 8:
+                            statusText = "취소 중";
+                            break;
+                        
+                        
+                        case 4:
+                            statusText = "배송 필요";
+                            break;
+                        case 5:
+                            statusText = "배송 중 / 배송 완료";
+                            break;
+                      
+                        default:
+                            statusText = "판매 중";
+                    }
+                } else {
+                    // 주문 기록이 없는 순수 상품 상태
+                    switch (p.getStatusId()) {
+                        case 10: statusText = "판매 전"; break;
+                        case 11: statusText = "판매 중"; break;
+                        case 9:  statusText = "판매 완료"; break;
+                        default: statusText = "기타(" + p.getStatusId() + ")";
+                    }
+                }
+                
+                String dateStr = p.getCreatedAt() != null ? p.getCreatedAt().substring(0, 10) : "-";
+                
+                System.out.printf("[%d]    %-18s   %-10d   %-12s   <-%s\n", 
+                    p.getProductId(), 
+                    p.getTitle(), 
+                    p.getPrice(), 
+                    dateStr, 
+                    statusText);
             }
         }
 
-        System.out.println();
-
-        // 최근 완료된 상품
-        System.out.println("[최근 완료된 상품]");
+        // 2. [최근 완료된 거래] 영역
+        System.out.println("\n[최근 완료된 거래]");
+        System.out.println("-".repeat(85));
         if (completedOrders == null || completedOrders.isEmpty()) {
-            System.out.println("완료된 상품이 없습니다.");
+            System.out.println("  완료된 거래 내역이 없습니다.");
         } else {
-            for (Orders order : completedOrders) {
-                String dateStr = order.getCreatedAt() != null ?
-                    order.getCreatedAt().substring(5, 10) : "-";
-                System.out.println("[" + order.getOrdersId() + "]  " +
-                    order.getProductTitle() + "  거래 완료  " + dateStr);
+            for (Orders o : completedOrders) {
+                String orderStatus = (o.getStatusId() == 7) ? "취소 완료" : "판매 완료";
+                String dateStr = o.getCreatedAt() != null ? o.getCreatedAt().substring(5, 10) : "-";
+                System.out.printf("  [%d] %-18s %s  %s\n", 
+                    o.getOrdersId(), o.getProductTitle(), orderStatus, dateStr); 
             }
         }
+
+        // 3. 알림 및 메뉴 영역
+        if (ongoingOrders != null && !ongoingOrders.isEmpty()) {
+            System.out.println("\n  🔔 [알림] 현재 처리가 필요한 진행 중인 주문이 " + ongoingOrders.size() + "건 있습니다.");
+        }
+
+        System.out.println("\n  [ 메뉴 선택 ]");
+        System.out.println("  1. 배송 시작 처리 (대기중)");
+        System.out.println("  2. 취소 요청 처리 (승인/거절)");
+        System.out.println("  3. 강제 정산 요청 (관리자 개입)");
+        System.out.println("  4. 전체 주문/판매 내역 상세 보기");
+        System.out.println("  0. 돌아가기");
+        System.out.println("-".repeat(85));
+        System.out.print("  선택 > ");
     }
 
     /**

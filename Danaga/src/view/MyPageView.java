@@ -307,58 +307,45 @@ public class MyPageView {
     private void viewSaleHistory() {
         while (true) {
             try {
+                // 1. 데이터 로드
+                List<Product> myProducts = ProductController.productSelectBySellerAll();
                 String userId = SessionManager.getCurrentUserId();
                 List<Orders> allSales = ordersController.getSalesBySellerId(userId);
-
+                
+                // 2. 주문 데이터 분류
                 List<Orders> ongoingOrders = new java.util.ArrayList<>();
-                List<Orders> completedOrders = new java.util.ArrayList<>();
+                List<Orders> completedOrders = new java.util.ArrayList<>(); 
 
-                for (Orders order : allSales) {
-                    int status = order.getStatusId();
-                    // 4:대기중, 5:배송중, 6:취소요청
-                    if (status == 4 || status == 5 || status == 6) {
-                        ongoingOrders.add(order);
-                    } else {
-                        completedOrders.add(order);
+                for (Orders o : allSales) {
+                    int s = o.getStatusId();
+                    if (s == 4 || s == 5 || s == 6 || s == 8) {
+                        ongoingOrders.add(o);
+                    } else if (s == 7 || s == 9) {
+                        completedOrders.add(o);
                     }
                 }
 
-                // 1. 데이터를 먼저 출력합니다 (SaleView 안의 메뉴 가이드는 지우는 것을 권장)
-                SaleView.printSaleHistory(ongoingOrders, completedOrders);
-
-                // 2. MyPageView에서 관리하는 통합 메뉴
-                System.out.println("\n  [ 메뉴 선택 ]");
-                System.out.println("  1. 배송 시작 처리");
-                System.out.println("  2. 취소 요청 처리 (동의/거절)");
-                System.out.println("  3. 전체 판매 내역 보기");
-                System.out.println("  0. 돌아가기");
-                System.out.print("\n  선택 > ");
+                // 3. SaleView를 통한 화면 출력 호출 (위임)
+                SaleView.printSaleHistory(myProducts, ongoingOrders, completedOrders);
                 
+                // 4. 메뉴 입력 및 처리 로직
                 String menu = sc.nextLine().trim();
 
                 switch (menu) {
-                    case "1":
-                        processShipping(ongoingOrders);
-                        break;
-                    case "2":
-                        processCancelRequest(ongoingOrders);
-                        break;
-                    case "3":
-                        viewAllSaleHistory(allSales);
-                        break;
-                    case "0":
-                        return; // 마이페이지 메인으로 돌아감
-                    default:
-                        System.out.println("잘못된 입력입니다.");
+                    case "1": processShipping(ongoingOrders); break;
+                    case "2": processCancelRequest(ongoingOrders); break;
+                    case "3": processSettlementRequest(ongoingOrders); break;
+                    case "4": viewAllSaleHistory(allSales); break;
+                    case "0": return;
+                    default: System.out.println("\n⚠️ 잘못된 입력입니다.");
                 }
-            } catch (java.sql.SQLException e) {
-                System.out.println("\n❌ 판매 내역 조회 중 오류 발생: " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("\n❌ 조회 중 오류 발생: " + e.getMessage());
                 CommonView.waitForBack(sc);
                 return;
             }
         }
     }
-
     /**
      * 배송 처리
      */
@@ -469,6 +456,49 @@ public class MyPageView {
                     System.out.println("취소 요청 처리를 중단합니다.");
                 }
                 CommonView.pauseScreen(sc);
+            }
+        } catch (Exception e) {
+            System.out.println("오류 발생: " + e.getMessage());
+        }
+    }
+    private void processSettlementRequest(List<Orders> ongoingOrders) {
+        // 1. 정산 요청이 가능한 대상(SHIPPING : 5)만 필터링
+        List<Orders> shippingOrders = new java.util.ArrayList<>();
+        for (Orders o : ongoingOrders) {
+            if (o.getStatusId() == 5) {
+                shippingOrders.add(o);
+            }
+        }
+
+        if (shippingOrders.isEmpty()) {
+            System.out.println("\n⚠️ 현재 정산 요청(관리자 개입)이 가능한 '배송중' 주문이 없습니다.");
+            return;
+        }
+
+        // 2. 목록 출력
+        PurchaseView.printSimpleOrderList(shippingOrders);
+        System.out.print("\n정산(관리자 개입) 요청할 주문 번호 입력 (0.돌아가기) > ");
+        String input = sc.nextLine().trim();
+
+        if ("0".equals(input)) return;
+
+        try {
+            int orderId = Integer.parseInt(input);
+            Orders target = PurchaseView.findOrderById(shippingOrders, orderId);
+
+            if (target != null) {
+                System.out.println("\n[정산 요청] 구매자가 확정하지 않아 관리자에게 최종 승인을 요청합니다.");
+                System.out.println("상태가 'CANCEL_REJECTED'로 변경되며 관리자가 검토하게 됩니다.");
+                System.out.print("정말 진행하시겠습니까? (1.확인  0.취소) > ");
+                
+                if ("1".equals(sc.nextLine().trim())) {
+                    // 💡 핵심: 별도의 DTO 변경 없이 기존 8번 상태(CANCEL_REJECTED)를 활용
+                    // 사실상 '판매자에 의한 강제 거절 및 정산 요청'의 의미로 사용
+                    ordersController.rejectCancel(target.getOrdersId()); 
+                    CommonView.printSuccessMessage("요청 완료", "관리자 검수 목록으로 전송되었습니다.");
+                }
+            } else {
+                System.out.println("목록에 있는 주문 번호를 정확히 입력해주세요.");
             }
         } catch (Exception e) {
             System.out.println("오류 발생: " + e.getMessage());
@@ -1167,7 +1197,6 @@ public class MyPageView {
         
         // 등록 확인
         if (confirmProductRegistration(newProduct)) {
-            System.out.println("\n[TODO] 상품 등록 처리 - Controller/Service 연동 예정");
             CommonView.printSuccessMessage("상품 등록 완료");
         } else {
             System.out.println("\n상품 등록을 취소했습니다.");

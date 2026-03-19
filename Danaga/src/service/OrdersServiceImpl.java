@@ -176,4 +176,6 @@ public class OrdersServiceImpl implements OrdersService {
         // DAO에서 발생한 SQLException이 그대로 컨트롤러로 전달됩니다.
         return ordersDAO.getOrdersForAdmin();
     }
+    
+    
 }
