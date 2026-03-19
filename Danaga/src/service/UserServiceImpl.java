@@ -7,6 +7,7 @@ import exception.DatabaseException;
 import exception.DuplicateUserException;
 import exception.UserNotFoundException;
 import util.SessionManager;
+import java.util.List;
 
 /**
  * 회원 Service 구현체
@@ -114,12 +115,45 @@ public class UserServiceImpl implements UserService {
         userDAO.chargeBalance(user, amount);
 
         // 3. 세션 정보 동기화
-        // DB 업데이트가 성공했으므로, 메모리에 있는 유저 객체의 잔액도 갱신해줍니다.
-        // 이렇게 해야 다음 화면에서 바로 수정된 잔액이 보입니다.
         user.setBalance(user.getBalance() + amount);
-        
-        // 만약 세션 매니저를 직접 참조한다면 아래와 같이 확정할 수도 있습니다.
-        // SessionManager.getLoginUser().setBalance(user.getBalance());
+    }
+
+    /**
+     * 전체 회원 목록 조회 (관리자용, 관리자 계정 제외)
+     */
+    @Override
+    public List<User> getAllUsers() throws DatabaseException {
+        return userDAO.selectAllUsers();
+    }
+
+    /**
+     * 아이디로 회원 단건 조회 (관리자용)
+     */
+    @Override
+    public User getUserById(String userId) throws DatabaseException {
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new IllegalArgumentException("아이디를 입력해주세요.");
+        }
+        User user = new User(userId, null);
+        return userDAO.selectById(user);
+    }
+
+    /**
+     * 회원 차단 (관리자용)
+     */
+    @Override
+    public void blockUser(String userId) throws DatabaseException {
+        User user = new User(userId, null);
+        userDAO.blockUser(user);
+    }
+
+    /**
+     * 회원 차단 해제 (관리자용)
+     */
+    @Override
+    public void unblockUser(String userId) throws DatabaseException {
+        User user = new User(userId, null);
+        userDAO.unblockUser(user);
     }
     
     /**
