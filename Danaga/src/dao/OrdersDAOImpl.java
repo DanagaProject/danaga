@@ -10,10 +10,11 @@ import java.util.List;
 
 
 import dto.Orders;
+import dto.User;
 import util.DBUtil;
 
 public class OrdersDAOImpl implements OrdersDAO {
-
+	
 	@Override
 	public int ordersInsert(Orders order) throws SQLException {
 	    Connection con = null;
@@ -88,6 +89,7 @@ public class OrdersDAOImpl implements OrdersDAO {
 
 	    return result;
 	}
+	
 
 /////////////////////////////// 
 ///    조회

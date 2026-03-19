@@ -2,6 +2,7 @@ package service;
 
 import exception.DatabaseException;
 
+import dto.User;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import dto.Orders;
 public interface OrdersService {
     
     // 1. 주문 추가
-    int ordersInsert(Orders orders) throws SQLException;
+	int ordersInsert(Orders orders, User loginUser) throws SQLException;
     
     // 2. 사용자별 주문 조회
     List<Orders> selectOrdersByUserId(String userId) throws SQLException;
@@ -25,7 +26,7 @@ public interface OrdersService {
     void cancleRequest(int orderId) throws SQLException;
     
     // 6. 취소 완료 및 환불
-    void cancelComplete(int orderId) throws SQLException;
+    void cancelComplete(int orderId, User loginUser) throws SQLException;
     
     // 7. 취소 거절
     int rejectCancel(int orderId) throws SQLException;

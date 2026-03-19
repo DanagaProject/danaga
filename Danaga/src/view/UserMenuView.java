@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 import controller.NotificationController;
 import controller.ProductController;
+import controller.UserController;
 
 /**
  * 일반 사용자 메뉴 View
@@ -17,6 +18,9 @@ import controller.ProductController;
 public class UserMenuView {
     private Scanner sc;
     private MyPageView myPageView;
+
+    private UserController userController = new controller.UserController();
+
     private final NotificationController notificationController;
 
     public UserMenuView(Scanner sc) {
@@ -30,6 +34,7 @@ public class UserMenuView {
      */
     public void printUserMenu() {
         while (true) {
+        	userController.refreshCurrentSession();
             System.out.println("\n════════════════════════════════════════");
             System.out.println("  💻  중고 컴퓨터 거래 사이트");
             System.out.println("════════════════════════════════════════");

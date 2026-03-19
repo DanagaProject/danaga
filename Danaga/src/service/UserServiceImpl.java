@@ -155,4 +155,13 @@ public class UserServiceImpl implements UserService {
         User user = new User(userId, null);
         userDAO.unblockUser(user);
     }
+    
+    /**
+     * 회원 정보 단건 조회
+     * DAO의 selectByUser를 그대로 호출하여 결과를 반환합니다.
+     */
+    @Override
+    public User selectByUser(User user) throws DatabaseException {
+        return userDAO.selectByUser(user);
+    }
 }

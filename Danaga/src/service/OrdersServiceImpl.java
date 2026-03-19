@@ -5,27 +5,41 @@ import java.util.List;
 
 import dao.OrdersDAO;
 import dao.OrdersDAOImpl;
+import dao.ProductDAO;
+import dao.ProductDAOImpl;
 import dto.Orders;
+import dto.User;
 import exception.DatabaseException;
 
 public class OrdersServiceImpl implements OrdersService {
 	private OrdersDAO ordersDAO = new OrdersDAOImpl();
+	private ProductDAO productDAO = ProductDAOImpl.getInstance();
 	
-	@Override
-    public int ordersInsert(Orders orders) throws SQLException {
-        // 비즈니스 로직 추가 가능 (예: 본인 상품 구매 불가 체크 등)
-        if (orders.getBuyerId() == null || orders.getProductId() <= 0) {
-            throw new SQLException("주문 정보가 올바르지 않습니다.");
-        }
+	// OrdersServiceImpl.java 내부에 구현
 
-        int result = ordersDAO.ordersInsert(orders);
-        
-        if (result == -1) {
-            throw new SQLException("주문 처리 중 오류가 발생했습니다.");
-        }
-        
-        return result;
-    }
+	@Override
+	public int ordersInsert(Orders order, User loginUser) throws SQLException {
+	    
+	    // 1. 방금 보여주신 완벽한 DAO 로직을 실행하여 DB 업데이트!
+	    int result = ordersDAO.ordersInsert(order);
+	    
+	    // ⭐ 2. DB 처리가 성공했다면 세션 잔액 동기화 ⭐
+	    if (result > 0) {
+	    	try {
+                // 💡 두 가지 예외를 던지는 메서드이므로 try 안에 넣습니다.
+                dto.Product product = productDAO.productSelectById(order.getProductId());
+                
+                int price = product.getPrice();
+                loginUser.setBalance(loginUser.getBalance() - price);
+	    	} catch (exception.ProductNotFoundException e) {
+                System.out.println("\n[시스템 오류] 상품 정보를 찾을 수 없어 세션 잔액을 갱신하지 못했습니다.");
+            } catch (exception.DatabaseException e) {
+                System.out.println("\n[시스템 오류] DB 통신 중 오류가 발생하여 세션 잔액을 갱신하지 못했습니다.");
+            }
+	    }
+	    
+	    return result;
+	}
 
     @Override
     public List<Orders> selectOrdersByUserId(String userId) throws SQLException {
@@ -48,6 +62,7 @@ public class OrdersServiceImpl implements OrdersService {
         if (result == 0) {
             throw new SQLException("구매 확정 처리 중 오류가 발생했습니다.");
         }
+        
     }
     
     public void startDelivery(int orderId) throws SQLException {
@@ -66,7 +81,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
     
     @Override
-    public void cancelComplete(int orderId) throws SQLException {
+    public void cancelComplete(int orderId, User loginUser) throws SQLException {
         
         Orders order = ordersDAO.selectOrderById(orderId); 
         
@@ -85,6 +100,7 @@ public class OrdersServiceImpl implements OrdersService {
         if (result == 0) {
             throw new SQLException("취소 완료 처리 중 오류가 발생했습니다.");
         }
+        loginUser.setBalance(loginUser.getBalance() + order.getProductPrice());
     }
     @Override
     public int rejectCancel(int orderId) throws SQLException {

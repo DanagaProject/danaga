@@ -40,7 +40,12 @@ public class MyPageView {
      * 마이페이지 메뉴
      */
     public void printMyPage() {
+    	
         while (true) {
+
+        	userController.refreshCurrentSession();
+        	
+
         	int unreadCount = notificationController.getUnreadCount(SessionManager.getCurrentUserId());
             System.out.println("\n════════════════════════════════════════");
             System.out.println("  👤  마이페이지");
@@ -184,7 +189,7 @@ public class MyPageView {
         // DAO에서 확정 가능한 주문만 조회해올 예정
     	List<Orders> confirmableOrders = new java.util.ArrayList<>();
         for (Orders o : orders) {
-            if (o.getStatusId() == 4) {
+            if (o.getStatusId() == 5) {
                 confirmableOrders.add(o);
             }
         }
@@ -295,49 +300,6 @@ public class MyPageView {
     /**
      * 주문번호로 주문 찾기
      */
-
-    /**
-     * 샘플 주문 데이터 생성 (View 테스트용)
-     * 추후 Controller/Service를 통해 실제 데이터로 대체
-     */
-    private List<Orders> getSampleOrders() {
-        List<Orders> orders = new ArrayList<>();
-        String currentUserId = SessionManager.getCurrentUserId();
-
-        // 샘플 주문 1 - 대기중
-        Orders o1 = new Orders(1, 1, currentUserId, 4, "2024-03-15 10:30:00");
-        o1.setProductTitle("LG 그램 17인치 노트북");
-        o1.setProductPrice(1200000);
-        o1.setSellerId("user01");
-        o1.setStatus("PENDING");
-        orders.add(o1);
-
-        // 샘플 주문 2 - 배송중
-        Orders o2 = new Orders(2, 4, currentUserId, 5, "2024-03-10 14:20:00");
-        o2.setProductTitle("레오폴드 FC660C 무접점");
-        o2.setProductPrice(250000);
-        o2.setSellerId("user02");
-        o2.setStatus("SHIPPING");
-        orders.add(o2);
-
-        // 샘플 주문 3 - 완료
-        Orders o3 = new Orders(3, 5, currentUserId, 9, "2024-03-05 09:15:00");
-        o3.setProductTitle("로지텍 MX Master 3");
-        o3.setProductPrice(80000);
-        o3.setSellerId("user03");
-        o3.setStatus("COMPLETED");
-        orders.add(o3);
-
-        // 샘플 주문 4 - 취소요청
-        Orders o4 = new Orders(4, 8, currentUserId, 6, "2024-03-12 16:45:00");
-        o4.setProductTitle("삼성 DDR5 32GB 램");
-        o4.setProductPrice(180000);
-        o4.setSellerId("user04");
-        o4.setStatus("CANCEL_REQUEST");
-        orders.add(o4);
-
-        return orders;
-    }
 
     /**
      * 내 판매 현황 (SCR-014)
@@ -1594,8 +1556,8 @@ public class MyPageView {
      */
     private void chargeBalance() {
         while (true) {
+            
             int currentBalance = SessionManager.getCurrentUser().getBalance();
-
             BalanceView.printChargeBalanceHeader(currentBalance);
 
             String input = sc.nextLine().trim();
