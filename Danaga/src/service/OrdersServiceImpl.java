@@ -65,6 +65,7 @@ public class OrdersServiceImpl implements OrdersService {
         
     }
     
+    @Override
     public void startDelivery(int orderId) throws SQLException {
     	int result = ordersDAO.startDelivery(orderId);
     	if (result==0) {
