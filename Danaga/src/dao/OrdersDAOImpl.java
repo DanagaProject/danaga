@@ -259,7 +259,7 @@ public class OrdersDAOImpl implements OrdersDAO {
 
 	        
 	        
-	        this.updateProductStatus(con, orders.getProductId(), 12);
+	        this.updateProductStatus(con, orders.getProductId(), 9);
 
 	        
 	        this.insertNotification(con, orders.getSellerId(), 
@@ -328,9 +328,9 @@ public class OrdersDAOImpl implements OrdersDAO {
 	                // [추가] 구매자 및 관리자에게 알림 발송
 	                String buyerId = this.selectBuyerIdByOrderId(con, orderId);
 	                if (buyerId != null) {
-	                    this.insertNotification(con, buyerId, "주문번호 [" + orderId + "]의 취소 요청이 거절되었습니다.");
+	                    this.insertNotification(con, buyerId, "주문번호 [" + orderId + "]의 강제 정산요청이 들어왔습니다.");
 	                }
-	                this.insertNotification(con, "admin", "주문번호 [" + orderId + "] 취소 거절 발생. 분쟁 조정이 필요합니다.");
+	                this.insertNotification(con, "admin", "주문번호 [" + orderId + "] 강제 정산요청이 들어왔습니다. 확인 바랍니다.");
 	            }
 	            con.commit();
 	        } catch (SQLException e) {
@@ -341,7 +341,37 @@ public class OrdersDAOImpl implements OrdersDAO {
 	    return result;
 	}
 	
-	
+	public int requestSettlement(int orderId) throws SQLException {
+	    int result = 0;
+	    try (Connection con = DBUtil.getConnection()) {
+	        con.setAutoCommit(false);
+	        try {
+	            // 1. 상태를 8(CANCEL_REJECTED / 분쟁 및 정산요청)로 변경
+	            result = updateOrdersStatus(con, orderId, 8);
+	            
+	            if (result > 0) {
+	                // 2. 판매자 정보와 상품 정보를 가져오면 알림이 더 친절해집니다.
+	                // (기존에 만들어두신 조회 메서드가 있다면 활용하세요)
+	                
+	                // [구매자 알림] "판매자가 정산을 요청했습니다. 확인이 필요합니다."
+	                String buyerId = this.selectBuyerIdByOrderId(con, orderId);
+	                if (buyerId != null) {
+	                    this.insertNotification(con, buyerId, 
+	                        "주문번호 [" + orderId + "]에 대해 판매자가 정산을 요청했습니다. 미확정 시 자동 승인될 수 있습니다.");
+	                }
+	                
+	                // [관리자 알림] 관리자가 우선순위를 정할 수 있도록 문구 설정
+	                this.insertNotification(con, "admin", 
+	                    "[긴급/정산요청] 주문번호 [" + orderId + "] 판매자의 정산 요청 발생. 검수 후 승인 바랍니다.");
+	            }
+	            con.commit();
+	        } catch (SQLException e) {
+	            con.rollback();
+	            throw e;
+	        }
+	    }
+	    return result;
+	}
 ////////////////////////////////////////////////////////////////////////////////////
 	public void updateUserBalance(Connection con, String userId, int amount) throws SQLException {
 
